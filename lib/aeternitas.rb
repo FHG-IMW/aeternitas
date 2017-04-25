@@ -1,8 +1,12 @@
-require "aeternitas/version"
-require "aeternitas/lock_with_cooldown"
 require "active_support/all"
 require "redis"
 require "connection_pool"
+require "aeternitas/version"
+require "aeternitas/lock_with_cooldown"
+require "aeternitas/pollable"
+require "aeternitas/pollable_meta_data"
+require "aeternitas/polling_frequency"
+require "aeternitas/errors"
 
 module Aeternitas
   def self.redis

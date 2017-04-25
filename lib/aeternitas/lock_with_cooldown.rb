@@ -181,7 +181,7 @@ module Aeternitas
 
     # Custom error class thrown when the lock can not be acquired
     # @!attribute [r] timeout
-    #   @return [Time] the locks current timeout
+    #   @return [DateTime] the locks current timeout
     class LockInUseError < StandardError
       attr_reader :timeout
 

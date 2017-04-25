@@ -1,10 +1,10 @@
 module Aeternitas
   # Stores default polling frequency calculation methods
   module PollingFrequency
-    HOURLY  = ->(context) {}
-    DAILY   = ->(context) {}
-    WEEKLY  = ->(context) {}
-    MONTHLY = ->(context) {}
+    HOURLY  = ->(context) { Time.now + 1.hour }
+    DAILY   = ->(context) { Time.now + 1.day  }
+    WEEKLY  = ->(context) { Time.now + 1.week }
+    MONTHLY = ->(context) { Time.now + 1.month }
 
     # Retrieves the build-in polling frequency methods by name
     #
