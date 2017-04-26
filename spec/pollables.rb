@@ -35,7 +35,7 @@ class FullPollable < ActiveRecord::Base
 
     lock_options(
       lock_key: ->(pollable) { "#{pollable.created_at}-#{pollable.id}" },
-      colldown: 1.second,
+      cooldown: 1.second,
       timeout:  2.years
     )
   end
