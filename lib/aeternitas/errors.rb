@@ -17,16 +17,28 @@ module Aeternitas
 
     end
 
+    # Raised when a source entry already exists.
+    # @!attribute [r] fingerprint
+    #   the sources fingerprint
     class SourceEntryExists < StandardError
       attr_reader :fingerprint
+
+      # Create a new Exception
+      # @param [String] fingerprint the sources fingerprint
       def initialize(fingerprint)
         @fingerprint = fingerprint
         super("The source entry with fingerprint '#{fingerprint}' already exists!")
       end
     end
 
+    # Raised when a source entry does not exist.
+    # @!attribute [r] fingerprint
+    #   the sources fingerprint
     class SourceEntryDoesNotExist < StandardError
       attr_reader :fingerprint
+
+      # Create a new Exception
+      # @param [String] fingerprint the sources fingerprint
       def initialize(fingerprint)
         @fingerprint = fingerprint
         super("The source entry with fingerprint '#{fingerprint}' does not exist!")

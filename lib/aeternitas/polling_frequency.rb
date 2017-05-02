@@ -10,7 +10,7 @@ module Aeternitas
     #
     # @param [Symbol] name the frequency method
     # @return [Lambda] Polling frequency method
-    # @raise []ArgumentError] if the preset does not exist
+    # @raise [ArgumentError] if the preset does not exist
     def self.by_name(name)
       case name
       when :hourly then HOURLY

@@ -35,6 +35,7 @@ module Aeternitas
     end
 
     # Checks whether the entry with the given fingerprint exists.
+    # @abstract
     # @param [String] id the entries id
     # @return [Boolean] if the entry exists
     def exist?(id)
