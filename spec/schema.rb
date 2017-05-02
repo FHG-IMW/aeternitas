@@ -13,6 +13,12 @@ ActiveRecord::Schema.define do
     t.timestamps
   end
 
+  create_table :aeternitas_sources, id: :string, primary_key: :fingerprint do |t|
+    t.string :pollable_type, null: false
+    t.integer :pollable_id, null: false
+    t.datetime :created_at
+  end
+
   create_table :full_pollables, force: true do |t|
     t.string :name
     t.timestamps

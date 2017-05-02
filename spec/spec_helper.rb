@@ -2,6 +2,7 @@ $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 require 'active_record'
 require 'aeternitas'
 require 'database_cleaner'
+require 'memfs'
 
 # configure active record
 ActiveRecord::Base.establish_connection adapter: "sqlite3", database: ":memory:"
@@ -25,5 +26,9 @@ RSpec.configure do |config|
     DatabaseCleaner.cleaning do
       example.run
     end
+  end
+
+  config.around(:each, memfs: true) do |example|
+    MemFs.activate { example.run }
   end
 end

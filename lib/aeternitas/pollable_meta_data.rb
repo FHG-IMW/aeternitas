@@ -1,6 +1,8 @@
 require 'aasm'
 
 module Aeternitas
+  # Stores the meta data of all pollables
+  # Every pollable needs to have exactly one meta data object
   class PollableMetaData < ActiveRecord::Base
     self.table_name = 'aeternitas_pollable_meta_data'
 
@@ -15,6 +17,8 @@ module Aeternitas
     #   t.text :deactivation_reason
     #   t.datetime :deactivated_at
     # end
+    # create_index :aeternitas_pollable_meta_data, [:pollable_id, :pollable_type], name: 'aeternitas_pollable_unique', unique: true
+    # create_index :aeternitas_pollable_meta_data, [:next_polling, :state], name: 'aeternitas_pollable_enqueueing'
     ######
 
     belongs_to :pollable, polymorphic: true

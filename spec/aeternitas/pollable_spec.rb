@@ -151,6 +151,25 @@ describe Aeternitas::Pollable do
     end
   end
 
+  describe '#add_source' do
+    context 'when the source is new' do
+      it 'creates a new source', memfs: true do
+        source = full_pollable.add_source('foobar')
+        expect(source.raw_content).to eq('foobar')
+        expect(source.persisted?).to be(true)
+        expect(full_pollable.sources).to contain_exactly(source)
+      end
+    end
+
+    context 'when the source exists' do
+      it 'does not create a new source', memfs: true do
+        old_source = Aeternitas::Source.create(pollable: full_pollable, raw_content: 'foobar')
+        expect(full_pollable.add_source('foobar')).to eq(old_source)
+        expect(full_pollable.sources.count).to be(1)
+      end
+    end
+  end
+
   describe '.polling_options' do
     it 'runs the pollable dsl' do
       block = proc { }

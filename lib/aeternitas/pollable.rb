@@ -31,6 +31,10 @@ module Aeternitas
               dependent: :destroy,
               class_name: Aeternitas::PollableMetaData
 
+      has_many :sources, as: :pollable,
+               dependent: :destroy,
+               class_name: Aeternitas::Source
+
       #validates :pollable_meta_data, presence: true
 
       before_validation ->(pollable) { pollable.pollable_meta_data ||= pollable.build_pollable_meta_data(state: 'waiting' ) }
@@ -102,6 +106,25 @@ module Aeternitas
       self.class.configuration
     end
 
+    # Creates a new source with the given content if it does not exist
+    # @example
+    #   #...
+    #   def poll
+    #     response = HTTParty.get("http://example.com")
+    #     add_source(response.parsed_response)
+    #   end
+    #   #...
+    # @param [String] raw_content the sources raw content
+    # @return [Aeternitas::Source] the newly created or existing source
+    def add_source(raw_content)
+      source = self.sources.build(raw_content: raw_content)
+      existing_source = sources.find_by(fingerprint: source.fingerprint)
+      return existing_source if existing_source.present?
+
+      source.save!
+      source
+    end
+
     private
 
     # Run all prepolling methods
@@ -112,11 +135,13 @@ module Aeternitas
 
     # Run all postpolling methods
     def _after_poll
-      pollable_meta_data.update_attributes!(
-        last_polling: Time.now,
-        next_polling: configuration.polling_frequency.call(self)
-      )
-      pollable_meta_data.wait!
+      ActiveRecord::Base.transaction do
+        pollable_meta_data.update_attributes!(
+          last_polling: Time.now,
+          next_polling: configuration.polling_frequency.call(self)
+        )
+        pollable_meta_data.wait!
+      end
 
       configuration.after_polling.each { |action| action.call(self) }
     end

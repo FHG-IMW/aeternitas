@@ -22,8 +22,8 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_dependency "activerecord", "~> 5.0"
-  spec.add_dependency "redis", "~> 3"
-  spec.add_dependency "connection_pool", "~> 2"
+  spec.add_dependency "redis"
+  spec.add_dependency "connection_pool"
   spec.add_dependency "aasm"
   spec.add_dependency "sidekiq"
 
@@ -32,4 +32,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rspec", "~> 3.0"
   spec.add_development_dependency "sqlite3"
   spec.add_development_dependency "database_cleaner", "~> 1.5"
+  spec.add_development_dependency "memfs"
 end

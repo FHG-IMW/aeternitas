@@ -6,7 +6,7 @@ module Aeternitas
                     queue: :polling
 
     sidekiq_retry_in do |count|
-      [60,3600,86400,604800][count]
+      [60, 3600, 86400, 604800][count]
     end
 
     sidekiq_retries_exhausted do |msg|
@@ -15,7 +15,7 @@ module Aeternitas
         meta_data.deactivate
         meta_data.deactivation_message = msg['error_message']
         meta_data.deactivated_at = Time.now
-        meta_data.save
+        meta_data.save!
       end
     end
 

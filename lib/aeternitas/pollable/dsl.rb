@@ -11,7 +11,7 @@ module Aeternitas
       end
 
       # Configures the polling frequency. This can be either the name of a {Aeternitas::PollingFrequency}
-      # or a block that takes a pollable instance and returns a DateTime
+      # or a lambda that recives a pollable instance and returns a DateTime
       #
       # @param [Symbol, Proc] frequency Sets the polling frequency.
       #   representing the next polling time.
@@ -19,6 +19,7 @@ module Aeternitas
       #   polling_frequency :weekly
       # @example using a custom block
       #   polling_frequency ->(pollable) {Time.now + 1.month + Time.now - pollable.created_at.to_i / 3.month * 1.month}
+      # @todo allow custom methods via reference
       def polling_frequency(frequency)
         if frequency.is_a?(Symbol)
           @configuration.polling_frequency = Aeternitas::PollingFrequency.by_name(frequency)
@@ -61,7 +62,8 @@ module Aeternitas
         end
       end
 
-      # Configure errors that will cause the pollable instance to be deactivated imideately of they occur during the poll.
+      # Configure errors that will cause the pollable instance to be deactivated imideately of they
+      # occur during the poll.
       #
       # @param [Object] error_class error classes
       def deactivate_on(*error_class)
@@ -92,13 +94,13 @@ module Aeternitas
       #   lock_key ->(pollable) {URI.parse(pollable.url).host}
       def lock_key(key)
         @configuration.lock_options[:key] = case key
-                                when String
-                                  ->(obj) { return key }
                                 when Symbol
                                   ->(obj) { return obj.send(key) }
-                                else
+                                when Proc
                                   key
-                              end
+                                else
+                                  ->(obj) { return key.to_s }
+                                end
       end
 
       # Configure the lock.
