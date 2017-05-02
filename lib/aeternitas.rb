@@ -9,6 +9,7 @@ require "aeternitas/source"
 require "aeternitas/polling_frequency"
 require "aeternitas/errors"
 require "aeternitas/storage_adapter"
+require "aeternitas/sidekiq"
 
 # Aeternitas
 module Aeternitas
@@ -30,6 +31,15 @@ module Aeternitas
   # @yieldparam [Aeternitas::Configuration] config the aeternitas configuration
   def self.configure
     yield(self.config)
+  end
+
+  # Enqueues all active pollables who's next polling is lower than the current time
+  def enqueue_due_pollables
+    Aeternitas::PollableMetaData.due.find_each do |pollable_meta_data|
+      Aeternitas::Sidekiq::PollJob
+        .set(pollable_meta_data.pollable.configuration.queue)
+        .perform_async(pollable_meta_data.id)
+    end
   end
 
   # Stores the global Aeternitas configuration

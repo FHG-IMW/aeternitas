@@ -52,5 +52,7 @@ module Aeternitas
       end
     end
 
+    scope(:due, ->() { waiting.where(next_polling < Time.now) })
+
   end
 end

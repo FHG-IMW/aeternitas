@@ -4,7 +4,7 @@ require "rails/generators/active_record"
 module Aeternitas
   # Installs Aeternitas in a rails app.
   class InstallGenerator < ::Rails::Generators::Base
-    include ::Rails::Generators::Migration
+    include Rails::Generators::Migration
 
     source_root File.expand_path("../templates", __FILE__)
 
@@ -20,11 +20,12 @@ module Aeternitas
       end
     end
 
-    def create_initializer
-      create_file(
-          "config/initializers/aeternitas.rb",
-          "Aeternitas.configure do |config|\n  # Config goes here\nend"
-      )
+    def copy_initializer
+      copy_file('initializer.rb', 'config/initializers/aeternitas.rb')
+    end
+
+    def reminder
+      say "Don't forget to regularly run 'Aeternitas.enqueue_due_pollables'. E.g using 'whenever'", :yellow
     end
 
     def self.next_migration_number(dirname)
