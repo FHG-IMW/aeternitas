@@ -5,32 +5,32 @@ module Aeternitas
   # A distributed lock that can not be acquired after being unlocked for a certain time (cooldown).
   #
   # @example
-  #   lock = Ciwor::LockWithCooldown.new("Twitter-MY_API_KEY", 5.seconds)
+  #   guard = Aeternitas::Guard.new("Twitter-MY_API_KEY", 5.seconds)
   #   begin
-  #     lock.with_lock do
+  #     guard.with_lock do
   #       twitter_client.user_timeline('Darth_Max')
   #     end
   #   rescue Twitter::TooManyRequests => e
-  #     lock.sleep_until(e.rate_limit.reset_at)
-  #     raise Ciwor::LockWithCooldown::LockInUseError(e.rate_limit.reset_at)
+  #     guard.sleep_until(e.rate_limit.reset_at)
+  #     raise Aeternitas::Guard::GuardIsLocked(e.rate_limit.reset_at)
   #   end
   #
   # @!attribute [r] id
-  #   @return [String] the locks id
+  #   @return [String] the guards id
   # @!attribute [r] timeout
   #   @return [ActiveSupport::Duration] the locks timeout duration
   # @!attribute [r] cooldown
   #   @return [ActiveSupport::Duration] cooldown time, in which the lock can't be acquired after being released
-  class LockWithCooldown
+  class Guard
 
     attr_reader :id, :timeout, :cooldown, :token
 
-    # Create a new LockWithCooldown
+    # Create a new Guard
     #
     # @param [String] id Lock id
     # @param [ActiveRecord::Duration] cooldown Cooldown time
     # @param [ActiveRecord::Duration] timeout Lock timeout
-    # @return [Aeternitas::LockWithCooldown] Creates a new Instance
+    # @return [Aeternitas::Guard] Creates a new Instance
     def initialize(id, cooldown, timeout = 10.minutes)
       @id       = id
       @cooldown = cooldown
@@ -40,9 +40,9 @@ module Aeternitas
 
     # Runs a given block if the lock can be acquired and releases the lock afterwards.
     #
-    # @raise [Ciwor::LockWithCooldown::LockInUseError] if the lock can not be acquired
+    # @raise [Aeternitas::LockWithCooldown::GuardIsLocked] if the lock can not be acquired
     # @example
-    #   LockWithCooldown.new("MyId", 5.seconds, 10.minutes).with_lock { do_request() }
+    #   Guard.new("MyId", 5.seconds, 10.minutes).with_lock { do_request() }
     def with_lock
       acquire_lock!
       begin
@@ -52,18 +52,18 @@ module Aeternitas
       end
     end
 
-    # Locks the lock until the given time.
+    # Locks the guard until the given time.
     #
     # @param [Time] until_time sleep time
-    # @param [String] msg hint why the resource sleeps
+    # @param [String] msg hint why the guard sleeps
     def sleep_until(until_time, msg = nil)
       sleep(until_time, msg)
     end
 
-    # Locks the lock for the given duration.
+    # Locks the guard for the given duration.
     #
     # @param [ActiveSupport::Duration] duration sleeping duration
-    # @param [String] msg hint why the resource sleeps
+    # @param [String] msg hint why the guard sleeps
     def sleep_for(duration, msg = nil)
       raise ArgumentError, 'duration must be an ActiveRecord::Duration' unless duration.is_a?(ActiveSupport::Duration)
       sleep_until(duration.from_now, msg)
@@ -82,7 +82,7 @@ module Aeternitas
     #     locked_until: '2017-01-01 10:10:00'
     #     token: '1234567890'
     #   }
-    # @raise [Ciwor::LockWithCooldown::LockInUseError] if the lock can not be acquired
+    # @raise [Aeternitas::Guard::GuardIsLocked] if the lock can not be acquired
     def acquire_lock!
       payload = {
         'id' => @id,
@@ -95,10 +95,10 @@ module Aeternitas
 
       has_lock = Aeternitas.redis.set(@id, JSON.unparse(payload), ex: @timeout.to_i, nx: true)
 
-      raise(LockInUseError.new(@id, get_timeout)) unless has_lock
+      raise(GuardIsLocked.new(@id, get_timeout)) unless has_lock
     end
 
-    # Tries to unlock the lock. This starts the cooldown phase.
+    # Tries to unlock the guard. This starts the cooldown phase.
     #
     # @example The Redis value looks like this
     #   {
@@ -124,7 +124,8 @@ module Aeternitas
       Aeternitas.redis.set(@id, JSON.unparse(payload), ex: @cooldown.to_i)
     end
 
-    # Locks the lock until the given date.
+    # Lets the guard sleep until the given date.
+    # This means that non can acquire the guards lock
     #
     # @example The Redis value looks like this
     #   {
@@ -136,10 +137,9 @@ module Aeternitas
     #     message: "API Quota Reached"
     #   }
     # @todo Should this raise an error if the lock is not owned by this instance?
-    # @param [Time] sleep_timeout for how long will the lock sleep
-    # @param [String] msg hint why the resource sleeps
+    # @param [Time] sleep_timeout for how long will the guard sleep
+    # @param [String] msg hint why the guard sleeps
     def sleep(sleep_timeout, msg = nil)
-
       payload = {
           'id' => @id,
           'state' => 'sleeping',
@@ -162,9 +162,9 @@ module Aeternitas
       payload['token'] == @token && payload['state'] == 'processing'
     end
 
-    # Returns the locks current timeout.
+    # Returns the guards current timeout.
     #
-    # @return [Time] the locks current timeout
+    # @return [Time] the guards current timeout
     def get_timeout
       payload = get_payload
       payload['state'] == 'processing' ? payload['cooldown'].to_i.seconds.from_now : Time.parse(payload['locked_until'])
@@ -182,7 +182,7 @@ module Aeternitas
     # Custom error class thrown when the lock can not be acquired
     # @!attribute [r] timeout
     #   @return [DateTime] the locks current timeout
-    class LockInUseError < StandardError
+    class GuardIsLocked < StandardError
       attr_reader :timeout
 
       def initialize(resource_id, timeout, reason = nil)

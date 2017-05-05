@@ -1,8 +1,8 @@
 require 'spec_helper'
 
-describe Aeternitas::LockWithCooldown do
+describe Aeternitas::Guard do
   describe '#with_lock' do
-    let(:lock) { Aeternitas::LockWithCooldown.new('MyId', 5.seconds, 10.minutes) }
+    let(:lock) { Aeternitas::Guard.new('MyId', 5.seconds, 10.minutes) }
     context 'when the lock is available' do
       before(:each) do
         @change_me = false
@@ -37,8 +37,7 @@ describe Aeternitas::LockWithCooldown do
 
     context 'when the lock is held by another process' do
       around(:each) do |example|
-        Aeternitas::LockWithCooldown.new(lock.id, lock.cooldown, lock.timeout)
-                               .with_lock { example.run }
+        Aeternitas::Guard.new(lock.id, lock.cooldown, lock.timeout).with_lock { example.run }
       end
 
       it 'does not run the block' do
@@ -52,7 +51,7 @@ describe Aeternitas::LockWithCooldown do
       end
 
       it 'raises a lock error' do
-        expect{ lock.with_lock }.to raise_exception(Aeternitas::LockWithCooldown::LockInUseError) do |e|
+        expect{ lock.with_lock }.to raise_exception(Aeternitas::Guard::GuardIsLocked) do |e|
           expect(e.timeout).to be_between(4.seconds.from_now, 5.seconds.from_now)
         end
       end
@@ -64,7 +63,7 @@ describe Aeternitas::LockWithCooldown do
 
     context 'when the lock is in cooldown' do
       before(:each) do
-        Aeternitas::LockWithCooldown.new(lock.id, lock.cooldown, lock.timeout).with_lock {}
+        Aeternitas::Guard.new(lock.id, lock.cooldown, lock.timeout).with_lock {}
       end
 
       it 'does not run the block' do
@@ -78,7 +77,7 @@ describe Aeternitas::LockWithCooldown do
       end
 
       it 'raises a lock error' do
-        expect { lock.with_lock }.to raise_exception(Aeternitas::LockWithCooldown::LockInUseError) do |e|
+        expect { lock.with_lock }.to raise_exception(Aeternitas::Guard::GuardIsLocked) do |e|
           expect(e.timeout).to be_between(4.seconds.from_now, 5.seconds.from_now)
         end
       end
@@ -91,7 +90,7 @@ describe Aeternitas::LockWithCooldown do
     context 'when the lock is sleeping' do
       let(:sleep_timeout) { 20.minutes.from_now }
       before(:each) do
-        Aeternitas::LockWithCooldown.new(lock.id, lock.cooldown, lock.timeout)
+        Aeternitas::Guard.new(lock.id, lock.cooldown, lock.timeout)
           .sleep_until(sleep_timeout)
       end
 
@@ -106,7 +105,7 @@ describe Aeternitas::LockWithCooldown do
       end
 
       it 'raises a lock error' do
-        expect{ lock.with_lock }.to raise_exception(Aeternitas::LockWithCooldown::LockInUseError) do |e|
+        expect{ lock.with_lock }.to raise_exception(Aeternitas::Guard::GuardIsLocked) do |e|
           expect(e.timeout).to be_within(1.second).of(sleep_timeout)
         end
       end
@@ -119,7 +118,7 @@ describe Aeternitas::LockWithCooldown do
 
   describe '#sleep_until' do
     before(:each) do
-      Aeternitas::LockWithCooldown.new('MyId', 5.seconds, 10.minutes)
+      Aeternitas::Guard.new('MyId', 5.seconds, 10.minutes)
         .sleep_until(5.hours.from_now)
     end
 

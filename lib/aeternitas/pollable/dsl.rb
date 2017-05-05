@@ -11,7 +11,7 @@ module Aeternitas
       end
 
       # Configures the polling frequency. This can be either the name of a {Aeternitas::PollingFrequency}
-      # or a lambda that recives a pollable instance and returns a DateTime
+      # or a lambda that receives a pollable instance and returns a DateTime
       #
       # @param [Symbol, Proc] frequency Sets the polling frequency.
       #   representing the next polling time.
@@ -83,17 +83,17 @@ module Aeternitas
         @configuration.queue = queue
       end
 
-      # Configure the lock key. This can be either a fixes String, a method reference or a block
+      # Configure the guard key. This can be either a fixes String, a method reference or a block
       #
       # @param [String, Symbol, Proc] key lock key
       # @example using a fixed String
-      #   lock_key "MyLockKey"
+      #   guard_key "MyLockKey"
       # @example using a method reference
-      #   lock_key :url
+      #   guard_key :url
       # @example using a block
-      #   lock_key ->(pollable) {URI.parse(pollable.url).host}
-      def lock_key(key)
-        @configuration.lock_options[:key] = case key
+      #   guard_key ->(pollable) {URI.parse(pollable.url).host}
+      def guard_key(key)
+        @configuration.guard_options[:key] = case key
                                 when Symbol
                                   ->(obj) { return obj.send(key) }
                                 when Proc
@@ -103,12 +103,20 @@ module Aeternitas
                                 end
       end
 
-      # Configure the lock.
-      # @see lock_key
-      # @see Aeternitas::LockWithCooldown
-      # @param [Hash] options lock options
-      def lock_options(options)
-        @configuration.lock_options.merge!(options)
+      # Configure the guard.
+      # @see guard_key
+      # @see Aeternitas::Guard
+      # @param [Hash] options guard options
+      def guard_options(options)
+        @configuration.guard_options.merge!(options)
+      end
+
+      # Configure the behaviour of poll jobs if a lock can't be acquired.
+      # When set to true poll jobs (and effectively the Sidekiq worker thread) will sleep until the
+      # lock is released when the lock could not be acquired.
+      # @param [Boolean] switch true|false
+      def sleep_on_guard_locked(switch)
+        @configuration.sleep_on_guard_locked = switch
       end
     end
   end

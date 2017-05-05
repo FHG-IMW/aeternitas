@@ -1,5 +1,5 @@
 # This migration creates the tables needed by Aeternitas
-class AddObjectChangesToVersions < ActiveRecord::Migration
+class AddAeternitas < ActiveRecord::Migration
   def change
     create_table :aeternitas_pollable_meta_data do |t|
       t.string :pollable_type, null: false

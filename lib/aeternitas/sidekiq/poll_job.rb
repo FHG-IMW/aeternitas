@@ -1,10 +1,11 @@
+require 'sidekiq'
 module Aeternitas
   module Sidekiq
     # Sidekiq Worker that is responsible for executing the polling.
-    class Polljob
-      include Sidekiq::Worker
+    class PollJob
+      include ::Sidekiq::Worker
 
-      sidekiq_options unique: true,
+      sidekiq_options unique: :until_executed,
                       unique_args: [:pollable_meta_data_id],
                       unique_job_expiration: 1.month.to_i,
                       queue: :polling,
@@ -15,10 +16,14 @@ module Aeternitas
       end
 
       sidekiq_retries_exhausted do |msg|
+        deactivate_pollable(msg['args'].first, msg['error_message'])
+      end
+
+      def self.deactivate_pollable(meta_data_id, error_message)
         ActiveRecord::Base.transaction do
-          meta_data = Aeternitas::PollableMetaData.find_by(id: msg['args'].first)
+          meta_data = Aeternitas::PollableMetaData.find_by(id: meta_data_id)
           meta_data.deactivate
-          meta_data.deactivation_message = msg['error_message']
+          meta_data.deactivation_reason = error_message
           meta_data.deactivated_at = Time.now
           meta_data.save!
         end

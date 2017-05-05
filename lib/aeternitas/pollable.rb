@@ -37,7 +37,7 @@ module Aeternitas
 
       #validates :pollable_meta_data, presence: true
 
-      before_validation ->(pollable) { pollable.pollable_meta_data ||= pollable.build_pollable_meta_data(state: 'waiting' ) }
+      before_create ->(pollable) { pollable.pollable_meta_data ||= pollable.build_pollable_meta_data(state: 'waiting' ); true }
 
       delegate :next_polling, :last_polling, :state, to: :pollable_meta_data
     end
@@ -47,12 +47,12 @@ module Aeternitas
       _before_poll
 
       begin
-        with_lock { poll }
+        guard.with_lock { poll }
       rescue StandardError => e
-        if configuration.deactivation_errors.include?(e.class)
+        if pollable_configuration.deactivation_errors.include?(e.class)
           deactivate(e)
           return false
-        elsif configuration.ignored_errors.include?(e.class)
+        elsif pollable_configuration.ignored_errors.include?(e.class)
           pollable_meta_data.has_errored!
           raise Aeternitas::Errors::Ignored, e
         else
@@ -90,20 +90,18 @@ module Aeternitas
       meta_data.save!
     end
 
-    # Tries to acquire the lock for this instance and runs the code block
-    def with_lock(&block)
-      lock_key = configuration.lock_options[:key].call(self)
-      lock_timeout = configuration.lock_options[:timeout]
-      lock_cooldown = configuration.lock_options[:cooldown]
-      lock = LockWithCooldown.new(lock_key, lock_cooldown, lock_timeout)
-      lock.with_lock(&block)
+    def guard
+      guard_key = pollable_configuration.guard_options[:key].call(self)
+      guard_timeout = pollable_configuration.guard_options[:timeout]
+      guard_cooldown = pollable_configuration.guard_options[:cooldown]
+      Aeternitas::Guard.new(guard_key, guard_cooldown, guard_timeout)
     end
 
     # Access the Pollables configuration
     #
     # @return [Aeternitas::Pollable::Configuration] the pollables configuration
-    def configuration
-      self.class.configuration
+    def pollable_configuration
+      self.class.pollable_configuration
     end
 
     # Creates a new source with the given content if it does not exist
@@ -118,9 +116,7 @@ module Aeternitas
     # @return [Aeternitas::Source] the newly created or existing source
     def add_source(raw_content)
       source = self.sources.build(raw_content: raw_content)
-      existing_source = sources.find_by(fingerprint: source.fingerprint)
-      return existing_source if existing_source.present?
-
+      return nil if sources.where(fingerprint: source.fingerprint).exists?
       source.save!
       source
     end
@@ -129,7 +125,7 @@ module Aeternitas
 
     # Run all prepolling methods
     def _before_poll
-      configuration.before_polling.each { |action| action.call(self) }
+      pollable_configuration.before_polling.each { |action| action.call(self) }
       pollable_meta_data.poll!
     end
 
@@ -138,25 +134,34 @@ module Aeternitas
       ActiveRecord::Base.transaction do
         pollable_meta_data.update_attributes!(
           last_polling: Time.now,
-          next_polling: configuration.polling_frequency.call(self)
+          next_polling: pollable_configuration.polling_frequency.call(self)
         )
         pollable_meta_data.wait!
       end
 
-      configuration.after_polling.each { |action| action.call(self) }
+      pollable_configuration.after_polling.each { |action| action.call(self) }
     end
 
     class_methods do
       # Access the Pollables configuration
       # @return [Aeternitas::Pollable::Configuration] the pollables configuration
-      def configuration
-        @configuration ||= Aeternitas::Pollable::Configuration.new
+      def pollable_configuration
+        @pollable_configuration ||= Aeternitas::Pollable::Configuration.new
+      end
+
+      def pollable_configuration=(config)
+        @pollable_configuration = config
       end
 
       # Configure the polling process.
       # For available configuration options see {Aeternitas::Pollable::Configuration} and {Aeternitas::Pollable::DSL}
       def polling_options(&block)
-        Aeternitas::Pollable::Dsl.new(configuration, &block)
+        Aeternitas::Pollable::Dsl.new(self.pollable_configuration, &block)
+      end
+
+      def inherited(other)
+        super
+        other.pollable_configuration = @pollable_configuration.copy
       end
     end
   end

@@ -27,16 +27,19 @@ module Aeternitas
     validates :pollable_id, presence: true, uniqueness: { scope: :pollable_type }
     validates :next_polling, presence: true
 
-    aasm :state do
+    aasm column: :state do
       state :waiting, initial: true
-      state :enqueued, :active, :deactivated, :errored
+      state :enqueued
+      state :active
+      state :deactivated
+      state :errored
 
       event :enqueue do
-        transitions from: %i[waiting deactivated], to: :enqueued
+        transitions from: %i[waiting deactivated errored], to: :enqueued
       end
 
       event :poll do
-        transitions from: %i[waiting enqueued], to: :active
+        transitions from: %i[waiting enqueued errored], to: :active
       end
 
       event :has_errored do
@@ -52,7 +55,6 @@ module Aeternitas
       end
     end
 
-    scope(:due, ->() { waiting.where(next_polling < Time.now) })
-
+    scope(:due, ->() { waiting.where('next_polling < ?', Time.now) })
   end
 end

@@ -1,8 +1,9 @@
 require "active_support/all"
 require "redis"
 require "connection_pool"
+require "sidekiq-unique-jobs"
 require "aeternitas/version"
-require "aeternitas/lock_with_cooldown"
+require "aeternitas/guard"
 require "aeternitas/pollable"
 require "aeternitas/pollable_meta_data"
 require "aeternitas/source"
@@ -34,11 +35,13 @@ module Aeternitas
   end
 
   # Enqueues all active pollables who's next polling is lower than the current time
-  def enqueue_due_pollables
+  def self.enqueue_due_pollables
     Aeternitas::PollableMetaData.due.find_each do |pollable_meta_data|
       Aeternitas::Sidekiq::PollJob
-        .set(pollable_meta_data.pollable.configuration.queue)
+        .set(queue: pollable_meta_data.pollable.pollable_configuration.queue)
         .perform_async(pollable_meta_data.id)
+      pollable_meta_data.enqueue
+      pollable_meta_data.save
     end
   end
 

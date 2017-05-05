@@ -33,11 +33,13 @@ class FullPollable < ActiveRecord::Base
 
     queue 'full_pollables'
 
-    lock_options(
-      lock_key: ->(pollable) { "#{pollable.created_at}-#{pollable.id}" },
+    guard_options(
+      key: ->(pollable) { "#{pollable.created_at}-#{pollable.id}" },
       cooldown: 1.second,
       timeout:  2.years
     )
+    
+    sleep_on_guard_locked false
   end
 
   def poll

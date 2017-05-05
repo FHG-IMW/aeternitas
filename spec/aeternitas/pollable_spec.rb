@@ -7,7 +7,7 @@ describe Aeternitas::Pollable do
   describe '#execute_poll' do
     context 'when the lock can be acquired' do
       it 'tries to grab the lock' do
-        expect(full_pollable).to receive(:with_lock)
+        expect(full_pollable).to receive(:guard).and_call_original
         full_pollable.execute_poll
       end
 
@@ -40,9 +40,9 @@ describe Aeternitas::Pollable do
 
     context 'when the lock can not be acquired' do
       before(:each) do
-        allow(full_pollable).to(
+        allow_any_instance_of(Aeternitas::Guard).to(
           receive(:with_lock).
-          and_raise(Aeternitas::LockWithCooldown::LockInUseError.new('key', 1.hour.from_now))
+          and_raise(Aeternitas::Guard::GuardIsLocked.new('key', 1.hour.from_now))
         )
       end
 
@@ -139,15 +139,12 @@ describe Aeternitas::Pollable do
     end
   end
 
-  describe '#with_lock' do
-    it 'tries to access the lock with the configured options' do
-      lock_key = full_pollable.configuration.lock_options[:key].call(full_pollable)
-      lock = Aeternitas::LockWithCooldown.new("foo", 1.second, 10.minutes)
-      block = proc {}
-
-      expect(Aeternitas::LockWithCooldown).to receive(:new).with(lock_key, 1.second, 2.years).and_return(lock)
-      expect(lock).to receive(:with_lock) { |&b| expect(b).to be block }
-      full_pollable.with_lock(&block)
+  describe '#guard' do
+    it 'returns a guard instance with the given configured options' do
+      key = full_pollable.pollable_configuration.guard_options[:key].call(full_pollable)
+      guard = Aeternitas::Guard.new("foo", 1.second, 10.minutes)
+      expect(Aeternitas::Guard).to receive(:new).with(key, 1.second, 2.years).and_return(guard)
+      full_pollable.guard
     end
   end
 
@@ -164,7 +161,7 @@ describe Aeternitas::Pollable do
     context 'when the source exists' do
       it 'does not create a new source', memfs: true do
         old_source = Aeternitas::Source.create(pollable: full_pollable, raw_content: 'foobar')
-        expect(full_pollable.add_source('foobar')).to eq(old_source)
+        expect(full_pollable.add_source('foobar')).to be(nil)
         expect(full_pollable.sources.count).to be(1)
       end
     end
@@ -174,7 +171,7 @@ describe Aeternitas::Pollable do
     it 'runs the pollable dsl' do
       block = proc { }
       expect(Aeternitas::Pollable::Dsl).to receive(:new) do |c, &b|
-        expect(c).to be(FullPollable.configuration)
+        expect(c).to be(FullPollable.pollable_configuration)
         expect(b).to be(block)
       end
       FullPollable.polling_options(&block)

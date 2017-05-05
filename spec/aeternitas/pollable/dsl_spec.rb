@@ -84,19 +84,19 @@ describe Aeternitas::Pollable::Dsl do
     end
   end
 
-  describe '#lock_key' do
+  describe '#guard_key' do
     context 'when given a string' do
       it 'configures a method that returns that string' do
-        dsl.lock_key 'Foo'
-        expect(config.lock_options[:key].call(Object.new)).to eq 'Foo'
+        dsl.guard_key 'Foo'
+        expect(config.guard_options[:key].call(Object.new)).to eq 'Foo'
       end
     end
 
     context 'when given a symbol' do
       it 'configures a method that tries to call the method on the given pollable' do
         pollable = spy('pollable')
-        dsl.lock_key :my_method
-        config.lock_options[:key].call(pollable)
+        dsl.guard_key :my_method
+        config.guard_options[:key].call(pollable)
         expect(pollable).to have_received(:my_method)
       end
     end
@@ -104,21 +104,21 @@ describe Aeternitas::Pollable::Dsl do
     context 'when given a lambda' do
       it 'configures the lambda' do
         my_lambda = ->(pollable) { Time.now }
-        dsl.lock_key my_lambda
-        expect(config.lock_options[:key]).to be(my_lambda)
+        dsl.guard_key my_lambda
+        expect(config.guard_options[:key]).to be(my_lambda)
       end
     end
   end
 
-  describe '#lock_options' do
+  describe '#guard_options' do
     it 'configures the given options' do
       options = {
         key: 'Foo',
         cooldown: 1.second,
         timeout: 2.hours
       }
-      dsl.lock_options options
-      expect(config.lock_options).to eq(options)
+      dsl.guard_options options
+      expect(config.guard_options).to eq(options)
     end
   end
 end
