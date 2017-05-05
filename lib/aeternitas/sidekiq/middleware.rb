@@ -10,7 +10,7 @@ module Aeternitas
 
         # try deleting the sidekiq unique key so the job can be reenqueued
         Aeternitas.redis.del(
-          SidekiqUniqueJobs::PayloadHelper.get_payload(msg['class'], msg['queue'], msg['args'])
+          SidekiqUniqueJobs::UniqueArgs.digest(msg)
         )
 
         # reenqueue the job

@@ -29,11 +29,11 @@ module Aeternitas
 
       has_one :pollable_meta_data, as: :pollable,
               dependent: :destroy,
-              class_name: Aeternitas::PollableMetaData
+              class_name: 'Aeternitas::PollableMetaData'
 
       has_many :sources, as: :pollable,
                dependent: :destroy,
-               class_name: Aeternitas::Source
+               class_name: 'Aeternitas::Source'
 
       #validates :pollable_meta_data, presence: true
 

@@ -25,9 +25,9 @@ describe Aeternitas::Sidekiq::Middleware do
   let(:meta_data) { FullPollable.create(name: 'foo').pollable_meta_data }
 
   it 'tries to delete the Sidekiq unique key' do
-    expect(SidekiqUniqueJobs::PayloadHelper).to(
-      receive(:get_payload).with('TestJob', 'polling', [meta_data.id])
-    ).exactly(4).times
+    expect(SidekiqUniqueJobs::UniqueArgs).to(
+      receive(:digest)
+    ).exactly(2).times.and_return("key")
     TestJob.perform_async(meta_data.id)
   end
 
