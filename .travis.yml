@@ -1,4 +1,6 @@
 sudo: false
+services:
+  - redis-server
 language: ruby
 rvm:
   - 2.3.3
