@@ -110,7 +110,7 @@ module Aeternitas
     #     token: '1234567890'
     #   }
     def unlock
-      return unless holds_lock?
+      return false unless holds_lock?
 
       payload = {
           'id' => @id,

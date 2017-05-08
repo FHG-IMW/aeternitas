@@ -56,5 +56,14 @@ module Aeternitas
     end
 
     scope(:due, ->() { waiting.where('next_polling < ?', Time.now) })
+
+    # Disables polling of this instance
+    #
+    # @param [String] reason Reason for the deactivation. (E.g. an error message)
+    def disable_polling(reason = nil)
+      self.deactivate
+      self.deactivation_reason = reason.to_s
+      self.save!
+    end
   end
 end

@@ -35,11 +35,11 @@ module Aeternitas
                dependent: :destroy,
                class_name: 'Aeternitas::Source'
 
-      #validates :pollable_meta_data, presence: true
+      validates :pollable_meta_data, presence: true
 
-      before_create ->(pollable) { pollable.pollable_meta_data ||= pollable.build_pollable_meta_data(state: 'waiting' ); true }
+      before_validation ->(pollable) { pollable.pollable_meta_data ||= pollable.build_pollable_meta_data(state: 'waiting' ); true }
 
-      delegate :next_polling, :last_polling, :state, to: :pollable_meta_data
+      delegate :next_polling, :last_polling, :disable_polling, to: :pollable_meta_data
     end
 
     # This method runs the polling workflow
@@ -50,7 +50,7 @@ module Aeternitas
         guard.with_lock { poll }
       rescue StandardError => e
         if pollable_configuration.deactivation_errors.include?(e.class)
-          deactivate(e)
+          disable_polling(e)
           return false
         elsif pollable_configuration.ignored_errors.include?(e.class)
           pollable_meta_data.has_errored!
@@ -78,16 +78,6 @@ module Aeternitas
     #   {Aeternitas::Pollable} was included. Otherwise it is done automatically after creation.
     def register_pollable
       self.pollable_meta_data ||= create_pollable_meta_data(state: 'waiting')
-    end
-
-    # Deactivates polling of this instance
-    #
-    # @param [String] reason Reason for the deactivation. (E.g. an error message)
-    def deactivate(reason = nil)
-      meta_data = pollable_meta_data
-      meta_data.deactivate
-      meta_data.deactivation_reason = reason.to_s
-      meta_data.save!
     end
 
     def guard

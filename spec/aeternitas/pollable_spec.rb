@@ -88,7 +88,7 @@ describe Aeternitas::Pollable do
       end
 
       it 'deactivates the pollable' do
-        expect(full_pollable).to receive(:deactivate).with(deactivation_error).and_call_original
+        expect(full_pollable).to receive(:disable_polling).with(deactivation_error).and_call_original
         full_pollable.execute_poll
         expect(full_pollable.pollable_meta_data.deactivated?).to be(true)
         expect(full_pollable.pollable_meta_data.deactivation_reason).to eq('Foo')
@@ -127,14 +127,14 @@ describe Aeternitas::Pollable do
     end
   end
 
-  describe '#deactivate' do
+  describe '#disable_polling' do
     it 'sets the state to \'deactivated\'' do
-      full_pollable.deactivate
+      full_pollable.disable_polling
       expect(full_pollable.pollable_meta_data.deactivated?).to be(true)
     end
 
     it 'sets the deactivation reason' do
-      full_pollable.deactivate('It broke')
+      full_pollable.disable_polling('It broke')
       expect(full_pollable.pollable_meta_data.deactivation_reason).to eq('It broke')
     end
   end
