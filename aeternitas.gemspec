@@ -6,12 +6,12 @@ require 'aeternitas/version'
 Gem::Specification.new do |spec|
   spec.name          = 'aeternitas'
   spec.version       = Aeternitas::VERSION
-  spec.authors       = ['Michael Prilop', 'Max Kießling', 'Robert Therbach']
+  spec.authors       = ['Michael Prilop', 'Max Kießling', 'Robert Terbach']
   spec.email         = ['max@kopfueber.org']
 
-  spec.summary       = %q{my summary}
-  spec.description   = %q{My Description}
-  spec.homepage      = "TODO: Put your gem's website or public repo URL here."
+  spec.summary       = %q{Continuous retrieval made easy}
+  spec.description   = %q{Continuous retrieval made easy.}
+  spec.homepage      = "https://github.com/FHG-IMW/aeternitas"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0").reject do |f|

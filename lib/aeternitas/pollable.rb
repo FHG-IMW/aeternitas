@@ -116,7 +116,7 @@ module Aeternitas
     # @return [Aeternitas::Source] the newly created or existing source
     def add_source(raw_content)
       source = self.sources.create(raw_content: raw_content)
-      source.valid? ? source : nil
+      source.persisted? ? source : nil
     end
 
     private
@@ -129,12 +129,11 @@ module Aeternitas
 
     # Run all postpolling methods
     def _after_poll
-      ActiveRecord::Base.transaction do
+      pollable_meta_data.wait! do
         pollable_meta_data.update_attributes!(
           last_polling: Time.now,
           next_polling: pollable_configuration.polling_frequency.call(self)
         )
-        pollable_meta_data.wait!
       end
 
       pollable_configuration.after_polling.each { |action| action.call(self) }
