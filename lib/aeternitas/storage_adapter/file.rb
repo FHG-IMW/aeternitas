@@ -13,14 +13,14 @@ module Aeternitas
       def store(id, raw_content)
         path = file_path(id)
         ensure_folders_exist(path)
-        raise(Aeternitas::Errors::SourceEntryExists, id) if ::File.exist?(path)
+        raise(Aeternitas::Errors::SourceDataExists, id) if ::File.exist?(path)
         ::File.open(path, 'w+', encoding: 'ascii-8bit') do |f|
           f.write(Zlib.deflate(raw_content, Zlib::BEST_COMPRESSION))
         end
       end
 
       def retrieve(id)
-        raise(Aeternitas::Errors::SourceEntryDoesNotExist, id) unless exist?(id)
+        raise(Aeternitas::Errors::SourceDataNotFound, id) unless exist?(id)
         Zlib.inflate(::File.read(file_path(id), encoding: 'ascii-8bit'))
       end
 

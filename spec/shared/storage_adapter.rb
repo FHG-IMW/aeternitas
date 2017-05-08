@@ -11,7 +11,7 @@ RSpec.shared_examples 'a storage adapter' do |adapter|
     it 'raises an error when the entry already exists', memfs: true do
       adapter.store(fingerprint, raw_content)
       expect { adapter.store(fingerprint, raw_content) }.to(
-        raise_error(Aeternitas::Errors::SourceEntryExists) { |e| expect(e.fingerprint).to be(fingerprint) }
+        raise_error(Aeternitas::Errors::SourceDataExists) { |e| expect(e.fingerprint).to be(fingerprint) }
       )
     end
   end
@@ -24,7 +24,7 @@ RSpec.shared_examples 'a storage adapter' do |adapter|
 
     it 'raises an error when the entry does not exists', memfs: true do
       expect { adapter.retrieve(fingerprint) }.to(
-          raise_error(Aeternitas::Errors::SourceEntryDoesNotExist) { |e| expect(e.fingerprint).to be(fingerprint) }
+          raise_error(Aeternitas::Errors::SourceDataNotFound) { |e| expect(e.fingerprint).to be(fingerprint) }
       )
     end
   end

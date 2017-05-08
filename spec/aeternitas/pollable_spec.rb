@@ -150,7 +150,8 @@ describe Aeternitas::Pollable do
 
   describe '#add_source' do
     context 'when the source is new' do
-      it 'creates a new source', memfs: true do
+      it 'creates a new source' do
+        allow_any_instance_of(Aeternitas::StorageAdapter::File).to receive(:store).and_return(true)
         source = full_pollable.add_source('foobar')
         expect(source.raw_content).to eq('foobar')
         expect(source.persisted?).to be(true)
@@ -159,7 +160,8 @@ describe Aeternitas::Pollable do
     end
 
     context 'when the source exists' do
-      it 'does not create a new source', memfs: true do
+      it 'does not create a new source' do
+        allow_any_instance_of(Aeternitas::StorageAdapter::File).to receive(:store).and_return(true)
         old_source = Aeternitas::Source.create(pollable: full_pollable, raw_content: 'foobar')
         expect(full_pollable.add_source('foobar')).to be(nil)
         expect(full_pollable.sources.count).to be(1)

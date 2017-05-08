@@ -17,10 +17,10 @@ module Aeternitas
 
     end
 
-    # Raised when a source entry already exists.
+    # Raised when a source data already exists.
     # @!attribute [r] fingerprint
     #   the sources fingerprint
-    class SourceEntryExists < StandardError
+    class SourceDataExists < StandardError
       attr_reader :fingerprint
 
       # Create a new Exception
@@ -34,7 +34,7 @@ module Aeternitas
     # Raised when a source entry does not exist.
     # @!attribute [r] fingerprint
     #   the sources fingerprint
-    class SourceEntryDoesNotExist < StandardError
+    class SourceDataNotFound < StandardError
       attr_reader :fingerprint
 
       # Create a new Exception

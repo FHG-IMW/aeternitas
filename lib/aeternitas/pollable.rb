@@ -7,7 +7,7 @@ module Aeternitas
   # Polling behaviour can be configured via {.pollable_options}.
   # @note Can only be used by classes inheriting from ActiveRecord::Base
   # @example
-  #   class MyWebsitePollable
+  #   class MyWebsitePollable < ActiveRecord::Base
   #     includes Aeternitas::Pollable
   #
   #     polling_options do
@@ -115,10 +115,8 @@ module Aeternitas
     # @param [String] raw_content the sources raw content
     # @return [Aeternitas::Source] the newly created or existing source
     def add_source(raw_content)
-      source = self.sources.build(raw_content: raw_content)
-      return nil if sources.where(fingerprint: source.fingerprint).exists?
-      source.save!
-      source
+      source = self.sources.create(raw_content: raw_content)
+      source.valid? ? source : nil
     end
 
     private

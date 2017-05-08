@@ -59,7 +59,7 @@ module Aeternitas
       @redis = nil
       @storage_adapter = Aeternitas::StorageAdapter::File
       @storage_adapter_config = {
-          directory: defined?(Rails) ? File.join(Rails.root, %w[public system raw_data_source_files]) : File.join(Dir.getwd, 'raw_data_source_files')
+        directory: defined?(Rails) ? File.join(Rails.root, %w[aeternitas_data]) : File.join(Dir.getwd, 'aeternitas_data')
       }
     end
 
