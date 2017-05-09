@@ -2,8 +2,8 @@
 
 A ruby gem for continuous source retrieval and data integration.
 
-Aeternitas provides means to regularly "poll" resources (i.e. a website, twitter feed or API) and to permanently store the raw results.
-By default we avoid putting too much load on external servers and store raw results as compressed files on disk.
+Aeternitas provides means to regularly "poll" resources (i.e. a website, twitter feed or API) and to permanently store retrieved results.
+By default it avoids putting too much load on external servers and stores raw results as compressed files on disk.
 Aeternitas can be configured to a wide variety of polling strategies (e.g. frequencies, cooldown periods, ignoring exceptions, deactivating resources, ...).
 
 Aeternitas is meant to be included in a rails application and expects a working sidekiq/redis setup and any kind of database backend.

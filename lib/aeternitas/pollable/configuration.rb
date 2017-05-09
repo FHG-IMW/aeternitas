@@ -13,12 +13,13 @@ module Aeternitas
     # @!attribute [rw] guard_options
     #   Configuration of the pollables lock (Default: key => class+id, cooldown => 5.seconds, timeout => 10.minutes)
     # @!attribute [rw] deactivation_errors
-    #   The pollable instance will be deactivated if on of this errors occurs while polling
+    #   The pollable instance will be deactivated if any of these errors occur while polling
     # @!attribute [rw] ignored_errors
     #   Errors in this list will be wrapped by {Aeternitas::Error::Ignored} if they occur while polling
+    #   (i.e. ignore in your exception tracker)
     # @!attribute [rw] sleep_on_guard_locked
     #   When set to true poll jobs (and effectively the Sidekiq worker thread) will sleep until the
-    #   lock is released when the lock could not be acquired. (Default: true)
+    #   lock is released if the lock could not be acquired. (Default: true)
     class Configuration
       attr_accessor :deactivation_errors,
                     :before_polling,

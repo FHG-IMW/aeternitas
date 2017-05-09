@@ -1,5 +1,9 @@
 module Aeternitas
   # Sources can store polling results in a write once - read many fashion.
+  # Each source, by default, hereby stores it's raw_content in a compressed file on disk if it has not been saved yet
+  # (determined by the raw_contents MD5 Hash)
+  # The 'aeternitas_sources' table holds all source metadata in a quite space-efficient way. For instance the compressed
+  # file's location is determined from the sources fingerprint which at the same time is it's database ID.
   class Source < ActiveRecord::Base
     ######
     # create_table :aeternitas_sources, id: :string, primary_key: :fingerprint do |t|

@@ -34,7 +34,7 @@ module Aeternitas
     yield(self.config)
   end
 
-  # Enqueues all active pollables who's next polling is lower than the current time
+  # Enqueues all active pollables for which next polling is lower than the current time
   def self.enqueue_due_pollables
     Aeternitas::PollableMetaData.due.find_each do |pollable_meta_data|
       Aeternitas::Sidekiq::PollJob
