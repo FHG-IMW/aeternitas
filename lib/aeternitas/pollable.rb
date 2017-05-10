@@ -62,7 +62,15 @@ module Aeternitas
       end
 
       _after_poll
+    rescue StandardError => e
+      begin
+        log_poll_error(e)
+      ensure
+        raise e
+      end
     end
+
+
 
     # This method implements the class specific polling behaviour.
     # It is only called after the lock was acquired successfully.
@@ -113,6 +121,9 @@ module Aeternitas
 
     # Run all prepolling methods
     def _before_poll
+      @start_time = Time.now
+      Aeternitas::Metrics.log(:polls, self)
+
       pollable_configuration.before_polling.each { |action| action.call(self) }
       pollable_meta_data.poll!
     end
@@ -127,6 +138,26 @@ module Aeternitas
       end
 
       pollable_configuration.after_polling.each { |action| action.call(self) }
+
+      if @start_time
+        execution_time = Time.now - @start_time
+        Aeternitas::Metrics.log_value(:execution_time, self, execution_time)
+        Aeternitas::Metrics.log(:guard_timeout_exceeded, self) if execution_time > pollable_configuration.guard_options[:timeout]
+        @start_time = nil
+      end
+      Aeternitas::Metrics.log(:successful_polls, self)
+    end
+
+    def log_poll_error(e)
+      if e.is_a? Aeternitas::Guard::GuardIsLocked
+        Aeternitas::Metrics.log(:guard_locked, self)
+        Aeternitas::Metrics.log_value(:guard_timeout, self, e.timeout - Time.now)
+      elsif e.is_a? Aeternitas::Errors::Ignored
+        Aeternitas::Metrics.log(:ignored_error, self)
+        Aeternitas::Metrics.log(:failed_polls, self)
+      else
+        Aeternitas::Metrics.log(:failed_polls, self)
+      end
     end
 
     class_methods do
