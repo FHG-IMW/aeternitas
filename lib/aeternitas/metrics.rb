@@ -1,6 +1,7 @@
 require 'aeternitas/metrics/ten_minutes_resolution'
 require 'aeternitas/metrics/counter'
 require 'aeternitas/metrics/values'
+require 'aeternitas/metrics/ratio'
 
 module Aeternitas
   # Provides extensive metrics for Aeternitas.
@@ -92,13 +93,39 @@ module Aeternitas
       raise('Invalid interval') if from > to
       result = Tabs.get_stats(get_key(name, pollable), from..to, resolution)
       if AVAILABLE_METRICS[name] == :counter
-        Aeternitas::Metrics::Counter.new(result)
+        Counter.new(result)
       else
-        Aeternitas::Metrics::Values.new(result)
+        Values.new(result)
       end
     rescue Tabs::UnknownMetricError => _
       Tabs.create_metric(get_key(name, pollable), AVAILABLE_METRICS[name].to_s)
       get(name, pollable, from: from, to: to, resolution: resolution)
+    end
+
+    # Returns the failure ratio of the given job for given time frame and resolution
+    # @param [Symbol String] name the metric
+    # @param [Object] pollable the pollable class
+    # @param [DateTime] from begin of the time frame
+    # @param [DateTime] to end of the timeframe
+    # @param [Symbol] resolution resolution
+    # @return [Aeternitas::Metrics::Ratio] ratio time series
+    def failure_ratio(pollable, from: 1.hour.ago, to: Time.now, resolution: :minute)
+      polls = polls(pollable, from: from, to: to, resolution: resolution)
+      failed_polls = failed_polls(pollable, from: from, to: to, resolution: resolution)
+      Ratio.new(from, to, resolution, calculate_ratio(polls, failed_polls))
+    end
+
+    # Returns the lock ratio of the given job for given time frame and resolution
+    # @param [Symbol String] name the metric
+    # @param [Object] pollable the pollable class
+    # @param [DateTime] from begin of the time frame
+    # @param [DateTime] to end of the timeframe
+    # @param [Symbol] resolution resolution
+    # @return [Aeternitas::Metrics::Ratio] ratio time series
+    def guard_locked_ratio(pollable, from: 1.hour.ago, to: Time.now, resolution: :minute)
+      polls = polls(pollable, from: from, to: to, resolution: resolution)
+      guard_locked = guard_locked(pollable, from: from, to: to, resolution: resolution)
+      Ratio.new(from, to, resolution, calculate_ratio(polls, guard_locked))
     end
 
     # Computes the metric key of a given metric-pollable pair
@@ -107,6 +134,19 @@ module Aeternitas
     # @return [String] the metric key
     def self.get_key(name, pollable_class)
       "#{name}:#{pollable_class.name}"
+    end
+
+    # Computes the ratio of a base counter time series and a target counter time series
+    # @param [Array] base base time series data
+    # @param [Array] target target time series data
+    # @return [Array] ratio time series data
+    def self.calculate_ratio(base, target)
+      base.zip(target).map do |b, t|
+        {
+          timestamp: DateTime.parse(b['timestamp']),
+          ratio: (t['count'] / b['count'].to_f rescue 0)
+        }
+      end
     end
   end
 end

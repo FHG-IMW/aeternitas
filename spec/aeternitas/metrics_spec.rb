@@ -110,4 +110,30 @@ describe Aeternitas::Metrics do
       end
     end
   end
+
+  describe '.calculate_ratio' do
+    it 'calculates the right ratio' do
+      base = [
+        { 'timestamp' => "2017-01-01 00:00:00 UTC", 'count' => 100 },
+        { 'timestamp' => "2017-01-01 00:01:00 UTC", 'count' => 50 },
+        { 'timestamp' => "2017-01-01 00:02:00 UTC", 'count' => 300 }
+      ]
+
+      target = [
+        { 'timestamp' => "2017-01-01 00:00:00 UTC", 'count' => 10 },
+        { 'timestamp' => "2017-01-01 00:01:00 UTC", 'count' => 25 },
+        { 'timestamp' => "2017-01-01 00:02:00 UTC", 'count' => 0 }
+      ]
+
+      expect(Aeternitas::Metrics.calculate_ratio(base, target)).to(
+        eq(
+          [
+            { timestamp: DateTime.parse('2017-01-01 00:00:00 UTC'), ratio: 0.1 },
+            { timestamp: DateTime.parse('2017-01-01 00:01:00 UTC'), ratio: 0.5 },
+            { timestamp: DateTime.parse('2017-01-01 00:02:00 UTC'), ratio: 0.0 }
+          ]
+        )
+      )
+    end
+  end
 end
