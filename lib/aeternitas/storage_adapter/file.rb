@@ -36,14 +36,14 @@ module Aeternitas
         ::File.exist?(file_path(id))
       end
 
-      # Returns the byte size of the entry.
+      # Returns the raw_content's size in bytes
       # @param [String] id the entries fingerprint
       # @return [Integer] the entries size in byte
       def content_size(id)
         retrieve(id).bytesize
       end
 
-      # Returns the compressed size of the entry.
+      # Returns the raw_content compressed size in bytes
       # @param [String] id the entries fingerprint
       # @return [Integer] the entries size on disk in byte
       def file_size_disk(id)
@@ -52,7 +52,7 @@ module Aeternitas
 
       private
 
-      # Calculates the location of the entry given it's fingerprint.
+      # Calculates the location of the raw_content file given it's fingerprint.
       # @param [String] id the entries fingerprint
       # @return [String] the entries location
       def file_path(id)

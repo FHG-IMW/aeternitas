@@ -62,8 +62,7 @@ module Aeternitas
         end
       end
 
-      # Configure errors that will cause the pollable instance to be deactivated imideately of they
-      # occur during the poll.
+      # Configure errors that will cause the pollable instance to be deactivated immediately during poll.
       #
       # @param [Object] error_class error classes
       def deactivate_on(*error_class)
@@ -71,19 +70,20 @@ module Aeternitas
       end
 
       # Configure errors that will be wrapped in {Aeternitas::Error::Ignored}.
+      # Use this to group exceptions which should be ignored in your exception tracker.
       #
       # @param [Object] error_class error classes
       def ignore_error(*error_class)
         @configuration.ignored_errors |= error_class
       end
 
-      # Configure the name of the Sidekiq queue in which the instances poll job will be enqueued.
+      # Configure the Sidekiq queue into which the instance's poll jobs will be enqueued.
       # @param [String] queue name of the Sidekiq queue
       def queue(queue)
         @configuration.queue = queue
       end
 
-      # Configure the guard key. This can be either a fixes String, a method reference or a block
+      # Configure the guard key. This can be either a fixed String, a method reference or a block
       #
       # @param [String, Symbol, Proc] key lock key
       # @example using a fixed String
@@ -113,7 +113,7 @@ module Aeternitas
 
       # Configure the behaviour of poll jobs if a lock can't be acquired.
       # When set to true poll jobs (and effectively the Sidekiq worker thread) will sleep until the
-      # lock is released when the lock could not be acquired.
+      # lock is released if the lock could not be acquired.
       # @param [Boolean] switch true|false
       def sleep_on_guard_locked(switch)
         @configuration.sleep_on_guard_locked = switch

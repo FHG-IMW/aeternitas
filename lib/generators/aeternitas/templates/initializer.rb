@@ -1,7 +1,6 @@
 # Configure Aeternitas
 Aeternitas.configure do |config|
-  # config goes here...
-  config.redis = { url: 'localhost', port: 6379 }
+  config.redis = { url: 'localhost', port: 6379 } #this is the default Redis config which should work in most cases.
 end
 
 Sidekiq.configure_server do |config|

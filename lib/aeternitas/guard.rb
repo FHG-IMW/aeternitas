@@ -2,7 +2,8 @@ require 'active_support/duration'
 require 'securerandom'
 
 module Aeternitas
-  # A distributed lock that can not be acquired after being unlocked for a certain time (cooldown).
+  # A distributed lock that can not be acquired after being unlocked for a certain time (cooldown period).
+  # Using Redis key expiration we ensure locks are released even after workers crash after a configurable timout period.
   #
   # @example
   #   guard = Aeternitas::Guard.new("Twitter-MY_API_KEY", 5.seconds)
@@ -21,6 +22,8 @@ module Aeternitas
   #   @return [ActiveSupport::Duration] the locks timeout duration
   # @!attribute [r] cooldown
   #   @return [ActiveSupport::Duration] cooldown time, in which the lock can't be acquired after being released
+  # @!attribute [r] token
+  #   @return [String] cryptographic token which ensures we do not lock/unlock a guard held by another process
   class Guard
 
     attr_reader :id, :timeout, :cooldown, :token
