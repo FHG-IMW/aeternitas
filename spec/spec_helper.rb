@@ -2,7 +2,6 @@ $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 require 'active_record'
 require 'aeternitas'
 require 'database_cleaner'
-require 'memfs'
 require 'rspec-sidekiq'
 
 # configure active record
@@ -12,6 +11,9 @@ require File.dirname(__FILE__) + '/pollables.rb'
 # configure aeternitas
 Aeternitas.configure do |conf|
   conf.redis = { host: "127.0.0.1" }
+  conf.storage_adapter_config = {
+    directory: '/tmp/aeternitas_tests/'
+  }
 end
 
 DatabaseCleaner[:active_record].strategy = :transaction
@@ -40,7 +42,11 @@ RSpec.configure do |config|
     end
   end
 
-  config.around(:each, memfs: true) do |example|
-    MemFs.activate { example.run }
+  config.around(:each, tmpFiles: true) do |example|
+    begin
+      example.run
+    ensure
+      FileUtils.rm_rf(Aeternitas.config.storage_adapter_config[:directory])
+    end
   end
 end

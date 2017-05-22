@@ -39,7 +39,9 @@ module Aeternitas
       execution_time: :value,
       guard_locked: :counter,
       guard_timeout: :value,
-      guard_timeout_exceeded: :counter
+      guard_timeout_exceeded: :counter,
+      sources_created: :counter,
+      pollables_created: :counter
     }.freeze
 
     Tabs.configure do |tabs_config|

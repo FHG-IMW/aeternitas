@@ -19,7 +19,7 @@ describe Aeternitas::Metrics do
   describe '.log' do
     it 'increases the counter' do
       expect(Tabs).to receive(:increment_counter).with('polls:FullPollable')
-      Aeternitas::Metrics.log(:polls, pollable)
+      Aeternitas::Metrics.log(:polls, FullPollable.new)
     end
 
     it 'raises an error if the metric does not exist' do

@@ -39,6 +39,8 @@ module Aeternitas
 
       before_validation ->(pollable) { pollable.pollable_meta_data ||= pollable.build_pollable_meta_data(state: 'waiting' ); true }
 
+      after_create ->(pollable) { Aeternitas::Metrics.log(:pollables_created, pollable) }
+
       delegate :next_polling, :last_polling, :disable_polling, to: :pollable_meta_data
     end
 
@@ -114,7 +116,10 @@ module Aeternitas
     # @return [Aeternitas::Source] the newly created or existing source
     def add_source(raw_content)
       source = self.sources.create(raw_content: raw_content)
-      source.persisted? ? source : nil
+      return nil unless source.persisted?
+
+      Aeternitas::Metrics.log(:sources_created, self)
+      source
     end
 
     private

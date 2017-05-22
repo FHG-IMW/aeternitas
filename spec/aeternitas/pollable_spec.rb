@@ -226,6 +226,11 @@ describe Aeternitas::Pollable do
         expect(source.persisted?).to be(true)
         expect(full_pollable.sources).to contain_exactly(source)
       end
+
+      it 'logs a created source', tmpFiles: true do
+        expect(Aeternitas::Metrics).to receive(:log).with(:sources_created, full_pollable)
+        full_pollable.add_source('foobar')
+      end
     end
 
     context 'when the source exists' do
@@ -234,6 +239,12 @@ describe Aeternitas::Pollable do
         old_source = Aeternitas::Source.create(pollable: full_pollable, raw_content: 'foobar')
         expect(full_pollable.add_source('foobar')).to be(nil)
         expect(full_pollable.sources.count).to be(1)
+      end
+
+      it 'doesnt log a created source', tmpFiles: true do
+        full_pollable.add_source('foobar')
+        expect(Aeternitas::Metrics).not_to receive(:log).with(:sources_created, full_pollable)
+        full_pollable.add_source('foobar')
       end
     end
   end
@@ -246,6 +257,13 @@ describe Aeternitas::Pollable do
         expect(b).to be(block)
       end
       FullPollable.polling_options(&block)
+    end
+  end
+
+  describe '.create' do
+    it 'logs a created pollable' do
+      expect(Aeternitas::Metrics).to receive(:log).with(:pollables_created, be_a(FullPollable))
+      FullPollable.create(name: 'foo')
     end
   end
 end
