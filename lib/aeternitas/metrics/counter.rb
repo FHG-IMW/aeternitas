@@ -1,17 +1,17 @@
 module Aeternitas
   module Metrics
-    # Wrapper for {Tabs::Metrics::Counter::Stats}.
+    # Wrapper for {TabsTabs::Metrics::Counter::Stats}.
     # It is for Counter metrics.
     class Counter
       include Enumerable
       extend Forwardable
 
-      def_delegators :@tabs_stats, :min, :max, :avg, :each, :to_a, :first, :last
+      def_delegators :@tabstabs_stats, :min, :max, :avg, :each, :to_a, :first, :last
 
       # Create a new Wrapper
-      # @param [Tabs::Metrics::Counter::Stats] tabs_stats the wrapped stats.
-      def initialize(tabs_stats)
-        @tabs_stats = tabs_stats
+      # @param [TabsTabs::Metrics::Counter::Stats] tabstabs_stats the wrapped stats.
+      def initialize(tabstabs_stats)
+        @tabstabs_stats = tabstabs_stats
       end
     end
   end

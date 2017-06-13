@@ -39,7 +39,7 @@ module Aeternitas
 
       before_validation ->(pollable) { pollable.pollable_meta_data ||= pollable.build_pollable_meta_data(state: 'waiting' ); true }
 
-      after_create ->(pollable) { Aeternitas::Metrics.log(:pollables_created, pollable) }
+      after_commit ->(pollable) { Aeternitas::Metrics.log(:pollables_created, pollable) }, on: :create
 
       delegate :next_polling, :last_polling, :disable_polling, to: :pollable_meta_data
     end

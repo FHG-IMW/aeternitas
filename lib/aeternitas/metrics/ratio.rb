@@ -55,7 +55,8 @@ module Aeternitas
       # @return [Float] the average ratio
       def avg
         return 0 if count.zero?
-        @values.inject(0) { |v, sum| sum + v['ratio'] } / @values.count.to_f
+        p @values
+        @values.inject(0) { |sum, v| sum + v[:ratio] } / @values.count
       end
 
       def to_s

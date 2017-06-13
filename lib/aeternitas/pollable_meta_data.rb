@@ -63,6 +63,7 @@ module Aeternitas
     def disable_polling(reason = nil)
       self.deactivate
       self.deactivation_reason = reason.to_s
+      self.deactivated_at = Time.now
       self.save!
     end
   end

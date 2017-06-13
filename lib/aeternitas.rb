@@ -2,7 +2,7 @@ require "active_support/all"
 require "redis"
 require "connection_pool"
 require "sidekiq-unique-jobs"
-require "tabs"
+require "tabs_tabs"
 require "aeternitas/version"
 require "aeternitas/guard"
 require "aeternitas/pollable"
@@ -73,7 +73,7 @@ module Aeternitas
 
     def redis=(redis_config)
       @redis = redis_config
-      Tabs.configure { |tabs_config| tabs_config.redis = redis_config }
+      TabsTabs.configure { |tabstabs_config| tabstabs_config.redis = redis_config }
     end
   end
 end

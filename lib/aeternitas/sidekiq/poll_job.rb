@@ -16,17 +16,8 @@ module Aeternitas
       end
 
       sidekiq_retries_exhausted do |msg|
-        deactivate_pollable(msg['args'].first, msg['error_message'])
-      end
-
-      def self.deactivate_pollable(meta_data_id, error_message)
-        ActiveRecord::Base.transaction do
-          meta_data = Aeternitas::PollableMetaData.find_by(id: meta_data_id)
-          meta_data.deactivate
-          meta_data.deactivation_reason = error_message
-          meta_data.deactivated_at = Time.now
-          meta_data.save!
-        end
+        meta_data = Aeternitas::PollableMetaData.find_by!(id: msg['args'].first)
+        meta_data.disable_polling(msg['error_message'])
       end
 
       def perform(pollable_meta_data_id)

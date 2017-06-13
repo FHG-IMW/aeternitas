@@ -1,8 +1,8 @@
 module Aeternitas
   module Metrics
-    # A tabs resolution represeting 10 minute intervals.
+    # A TabsTabs resolution represeting 10 minute intervals.
     module TenMinutesResolution
-      include Tabs::Resolutionable
+      include TabsTabs::Resolutionable
       extend self
 
       PATTERN = '%Y-%m-%d-%H-%M'.freeze
