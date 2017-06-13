@@ -1,0 +1,159 @@
+<div class="container grid-1280">
+  <div class="columns">
+    <div class="column col-4">
+      <h2><%= @pollable.name %></h2>
+    </div>
+    <div class="col-8">
+      <div class="float-right" style="display: inline-block;">
+        <%= render partial: 'partials/timepicker' %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section-blue">
+  <div class="container grid-1280">
+    <h4> Status </h4>
+    <div class="columns">
+      <div class="column col-4">
+        <div class="info-box">
+          <div class="info-box-header">
+            <div class="info-box-icon">
+              <i class="icon icon-menu"></i>
+            </div>
+          </div>
+          <div class="info-box-body">
+            <strong> <%= @pollable.count %> </strong> Pollables
+            <small>are currently enqueued</small>
+          </div>
+        </div>
+      </div>
+      <div class="column col-4">
+        <div class="info-box">
+          <div class="info-box-header">
+            <div class="info-box-icon green">
+              <i class="icon icon-more-horiz"></i>
+            </div>
+          </div>
+          <div class="info-box-body">
+            <strong> <%= Aeternitas::PollableStatistics.enqueued(@pollable) %> </strong> Pollables
+            <small>are currently enqueued</small>
+          </div>
+        </div>
+      </div>
+      <div class="column col-4">
+        <div class="info-box">
+          <div class="info-box-header">
+            <div class="info-box-icon red">
+              <i class="icon icon-shutdown"></i>
+            </div>
+          </div>
+          <div class="info-box-body">
+            <strong> <%= Aeternitas::PollableStatistics.deactivated(@pollable) %> </strong> Pollables
+            <small>are deactivated</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section-white">
+  <div class="container grid-1280">
+    <h3>
+      Polling Statistics
+    </h3>
+  </div>
+  <div class="large-canvas">
+    <canvas id="timeline"></canvas>
+    <script>
+        register_chart("timeline", "<%= timeline_pollable_path(id: @pollable.name) %>", {
+            type: 'bar',
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    yAxes: [{display: false, stacked: true}],
+                    xAxes: [{display: false, stacked: true}]
+                },
+                legend: {
+                    position: "bottom"
+                }
+            }
+        });
+    </script>
+  </div>
+</div>
+
+<div class="section-blue">
+  <div class="container grid-1280">
+    <div class="columns">
+      <div class="column col-5">
+        <h5>Execution Time</h5>
+        <canvas id="execution_time"></canvas>
+        <script>
+            register_chart("execution_time", "<%= execution_time_pollable_path(id: @pollable.name) %>", {
+                type: 'line',
+                options: {
+                    responsive: true,
+                    //maintainAspectRatio: false,
+                    legend: {
+                        position: "bottom"
+                    }
+                }
+            });
+        </script>
+      </div>
+
+      <div class="column col-2"></div>
+
+      <div class="column col-5">
+        <h5>Pollable Growth</h5>
+        <canvas id="pollable_growth"></canvas>
+        <script>
+            register_chart("pollable_growth", "<%= pollable_growth_pollable_path(id: @pollable.name) %>", {
+                type: 'line',
+                options: {
+                    responsive: true,
+                    //maintainAspectRatio: false,
+                    legend: {
+                        position: "bottom"
+                    }
+                }
+            });
+        </script>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section-white">
+  <div class="container grid-1280">
+    <h3> Deactivated Pollables </h3>
+    <table id="pollables-list" class="table">
+      <thead>
+      <tr>
+        <th> Data </th>
+        <th> Last Polling </th>
+        <th> Deactivation Reason </th>
+        <th> Deactivated At </th>
+      </tr>
+      </thead>
+      <tbody>
+      <% Aeternitas::PollableStatistics.deactivated_pollables(@pollable).each do |meta_data| %>
+          <tr>
+            <td> <%= pretty_print_attributes(meta_data.pollable) %> </td>
+            <td> <%= meta_data.last_polling %> </td>
+            <td> <%= meta_data.deactivation_reason %> </td>
+            <td> <%= l(meta_data.deactivated_at, format: :long) %> </td>
+          </tr>
+      <% end %>
+      </tbody>
+    </table>
+    <script>
+        $(document).ready(function() {
+            $('#pollables-list').DataTable();
+        } );
+    </script>
+  </div>
+</div>

@@ -1,0 +1,128 @@
+<div class="container grid-1280">
+  <h2>Dashboard</h2>
+</div>
+
+<div class="section-blue">
+  <div class="container grid-1280">
+    <h4> Status </h4>
+    <div class="columns">
+      <div class="column col-4">
+        <div class="info-box">
+          <div class="info-box-header">
+            <div class="info-box-icon">
+              <i class="icon icon-menu"></i>
+            </div>
+          </div>
+          <div class="info-box-body">
+            <strong> <%= Aeternitas::DashboardStatistics.enqueued %> </strong> Pollables
+            <small>are currently enqueued</small>
+          </div>
+        </div>
+      </div>
+      <div class="column col-4">
+        <div class="info-box">
+          <div class="info-box-header">
+            <div class="info-box-icon green">
+              <i class="icon icon-refresh"></i>
+            </div>
+          </div>
+          <div class="info-box-body">
+            <strong> <%= Aeternitas::DashboardStatistics.count_polls_24h %> </strong> Polls
+            <small>within the last 24h</small>
+          </div>
+        </div>
+      </div>
+      <div class="column col-4">
+        <div class="info-box">
+          <div class="info-box-header">
+            <div class="info-box-icon red">
+              <i class="icon icon-stop"></i>
+            </div>
+          </div>
+          <div class="info-box-body">
+            <strong> <%= Aeternitas::DashboardStatistics.count_failed_polls_24h %> </strong> Failures
+            <small>within the last 24h</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section-white">
+  <div class="container grid-1280">
+    <h4>
+      Polls
+      <small>Last 24h</small>
+    </h4>
+  </div>
+  <div class="large-canvas">
+    <canvas id="polls_24h"></canvas>
+    <script>
+        register_chart("polls_24h", "<%= polls_24h_dashboard_path %>", {
+            type: 'line',
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    yAxes: [{display: false}],
+                    xAxes: [{display: false}]
+                },
+                legend: {
+                    position: "bottom"
+                }
+            }
+        });
+    </script>
+  </div>
+</div>
+<div class="section-blue">
+  <div class="container grid-1280">
+    <h4> Pollable Statistics </h4>
+    <div class="columns">
+      <div class="column col-5">
+        <h5>Future Polls</h5>
+        <canvas id="future_polls"></canvas>
+        <script>
+            register_chart("future_polls", "<%= future_polls_dashboard_path %>", {
+                type: 'bar',
+                options: {
+                    responsive: true,
+                    //maintainAspectRatio: false,
+                    scales: {
+                        yAxes: [{stacked: true}],
+                        xAxes: [{stacked: true}]
+                    },
+                    legend: {
+                        position: "bottom"
+                    }
+                }
+            });
+        </script>
+      </div>
+
+      <div class="column col-2"></div>
+
+      <div class="column col-5">
+        <h5>Pollable Growth</h5>
+        <canvas id="pollable_growth"></canvas>
+        <script>
+            register_chart("pollable_growth", "<%= pollable_growth_dashboard_path %>", {
+                type: 'line',
+                options: {
+                    responsive: true,
+                    //maintainAspectRatio: false,
+                    legend: {
+                        position: "bottom"
+                    },
+                    scales: {
+                        yAxes: [{stacked: true}],
+                        xAxes: [{stacked: true}]
+                    }
+                }
+            });
+        </script>
+      </div>
+    </div>
+  </div>
+</div>

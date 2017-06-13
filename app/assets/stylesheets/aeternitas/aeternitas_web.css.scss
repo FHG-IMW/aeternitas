@@ -1,0 +1,181 @@
+/*
+ * This is a manifest file that'll be compiled into application.css, which will include all the files
+ * listed below.
+ *
+ * Any CSS and SCSS file within this directory, lib/assets/stylesheets, vendor/assets/stylesheets,
+ * or any plugin's vendor/assets/stylesheets directory can be referenced here using a relative path.
+ *
+ * You're free to add application-wide styles to this file and they'll appear at the bottom of the
+ * compiled file so the styles you add here take precedence over styles defined in any other CSS/SCSS
+ * files in this directory. Styles in this file should be added after the last require_* statement.
+ * It is generally better to create a new file per style scope.
+ *
+ *= require_tree .
+ *= require_self
+ */
+
+@import url('https://fonts.googleapis.com/css?family=PT+Sans');
+
+html, body {
+  height: 100%;
+}
+
+body{
+  color: #525564;
+  font-family: 'PT Sans', sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+.content-wrapper {
+  flex: 1 0 auto;
+}
+
+.section-blue {
+  width: 100%;
+  background-color: #eff4f7;
+  padding-top: 30px;
+  padding-bottom: 30px;
+}
+
+.section-white {
+  width: 100%;
+  background-color: #ffffff;
+  padding-top: 30px;
+  padding-bottom: 30px;
+}
+
+.large-canvas {
+  width: 100%;
+  margin: auto;
+  padding: 0px;
+  position: relative;
+  box-sizing: border-box;
+
+  canvas {
+    width: content-box;
+    height: 200px;
+  }
+}
+
+.page-header {
+  padding: 1rem .5rem;
+  height: 60px;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 200;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #eeeeee;
+
+  .navbar-logo {
+    height: 30px;
+  }
+}
+.navbar-spacer {
+  min-height: 80px;
+}
+
+.info-box {
+  .info-box-header {
+    text-align: center;
+    .info-box-icon {
+      display: inline-block;
+      border-radius: 50%;
+      border: 5px solid #5764c6 ;
+      padding: 40px;
+      i {
+        font-size: 30px;
+        color: #5764c6;
+      }
+      &.green {
+        border-color: #32b643;
+        i {
+          color: #32b643;
+        }
+      }
+      &.red {
+        border-color: #e85600;
+        i {
+          color: #e85600;
+        }
+      }
+    }
+  }
+  .info-box-body {
+    padding: 10px;
+    text-align: center;
+    font-size: 20px;
+
+    small {
+      display: block;
+      font-size: 12px;
+    }
+  }
+}
+
+footer {
+  padding-top: 20px;
+  padding-bottom: 20px;
+  width: 100%;
+  color: #acb3c2;
+  background-color: #454d5d;
+  a {
+    color: #f0f1f4;
+  }
+}
+
+
+.badge {
+  &.badge-success {
+    &:after {
+      background-color: #32b643;
+    }
+  }
+
+  &.badge-danger {
+    &:after {
+      background-color: #e85600;
+    }
+  }
+
+  &.badge-warning {
+    &:after {
+      background-color: #ffb700;
+    }
+  }
+}
+
+.timepicker {
+  .timepicker-header {
+    line-height: 1.2;
+    margin-bottom: 1.5rem;
+    margin-top: 0;
+    padding: 10px 20px;
+
+    &:hover {
+      background-color: #eff4f7;
+      cursor: pointer;
+    }
+  }
+
+  .timepicker-body {
+    box-shadow: 0 0rem 0.6rem rgba(69, 77, 93, 0.3);
+    border-radius: .4rem;
+    position: absolute;
+    background-color: #ffffff;
+    padding: 10px;
+    width: 490px;
+
+    &.closed {
+      display: none;
+    }
+  }
+}
+
+ul.attribute-list {
+  li{
+    list-style: none;
+    line-height: 0.5em;
+  }
+}

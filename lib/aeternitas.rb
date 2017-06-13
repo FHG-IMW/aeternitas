@@ -13,6 +13,7 @@ require "aeternitas/errors"
 require "aeternitas/storage_adapter"
 require "aeternitas/sidekiq"
 require "aeternitas/metrics"
+require "aeternitas/web_ui"
 
 # Aeternitas
 module Aeternitas

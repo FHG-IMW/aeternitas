@@ -9,7 +9,7 @@ Gem::Specification.new do |spec|
   spec.authors       = ['Michael Prilop', 'Max Kießling', 'Robert Terbach']
   spec.email         = ['max@kopfueber.org', 'michael.prilop@imw.fraunhofer.de']
 
-  spec.summary       = "æternitas - A ruby gem for continuous source retrieval and data integration"
+  spec.summary       = "Æternitas - A ruby gem for continuous source retrieval and data integration"
   spec.description   = <<-EOF
     Æternitas provides means to regularly 'poll' resources (i.e. a website, twitter feed or API) and to permanently
     store retrieved results. By default æternitas avoids putting too much load on external servers and stores raw
@@ -26,13 +26,15 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
 
-  spec.add_dependency 'activerecord', '~> 5.0'
+  spec.add_dependency 'rails', '>= 5.0.0'
   spec.add_dependency 'redis'
   spec.add_dependency 'connection_pool'
   spec.add_dependency 'aasm'
   spec.add_dependency 'sidekiq', '> 4'
   spec.add_dependency 'sidekiq-unique-jobs', '~> 5.0'
   spec.add_dependency 'tabstabs'
+  spec.add_dependency 'sass-rails'
+  spec.add_dependency 'colorable'
 
   spec.add_development_dependency 'bundler', '~> 1.13'
   spec.add_development_dependency 'rake', '~> 10.0'
@@ -42,3 +44,4 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rspec-sidekiq'
   spec.add_development_dependency 'mock_redis'
 end
+

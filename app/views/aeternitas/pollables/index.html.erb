@@ -1,0 +1,31 @@
+<div class="container grid-1280">
+  <h1>Pollables</h1>
+  <table id="pollables-list" class="table">
+    <thead>
+      <tr>
+        <th> Pollable </th>
+        <th> Count </th>
+        <th> Polls* </th>
+        <th> Error Rate* </th>
+        <th> Lock Rate* </th>
+      </tr>
+    </thead>
+    <tbody>
+      <% Aeternitas::PollablesIndexStatistics.available_pollables.each do |pollable| %>
+        <tr>
+          <td> <%= link_to pollable.name, pollable_path(id: pollable.name) %> </td>
+          <td> <%= pollable.count %> </td>
+          <td> <%= Aeternitas::PollablesIndexStatistics.polls(pollable) %> </td>
+          <td> <%= rate_ratio Aeternitas::PollablesIndexStatistics.failure_ratio(pollable) %> </td>
+          <td> <%= rate_ratio Aeternitas::PollablesIndexStatistics.guard_locked_ratio(pollable) %> </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+  <script>
+    $(document).ready(function() {
+      $('#pollables-list').DataTable();
+    } );
+  </script>
+  <small>* within the last 24h</small>
+</div>

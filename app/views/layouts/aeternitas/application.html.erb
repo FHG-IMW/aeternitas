@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+    <%= stylesheet_link_tag 'aeternitas/aeternitas_web.css' %>
+    <%= javascript_include_tag 'aeternitas/aeternitas_web.js' %>
+  </head>
+  <body>
+    <header class="page-header">
+      <section class="container grid-1280">
+        <nav class="navbar">
+          <section class="navbar-section">
+            <%= link_to root_url, class: 'btn btn-link' do %>
+              <%= image_tag "aeternitas/logo_large.png", class: "navbar-logo" %>
+            <% end %>
+            <%= link_to 'Dashboard', root_url, class: 'btn btn-link' %>
+            <%= link_to 'Pollables', pollables_path, class: 'btn btn-link' %>
+          </section>
+          <section class="navbar-section">
+          </section>
+        </nav>
+      </section>
+    </header>
+    <section class="navbar-spacer">&nbsp;</section>
+
+    <div class="content-wrapper">
+      <%= yield %>
+    </div>
+
+    <footer>
+      <div class="container grid-1280">
+        <p>
+          <a href="https://github.com/FHG-IMW/aeternitas"> Github </a>
+          |
+          Version <%= Aeternitas::VERSION %>
+        </p>
+        <p>
+          Licensed under the <a href="https://github.com/FHG-IMW/aeternitas/blob/master/LICENSE.txt" >MIT License</a>.
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>
