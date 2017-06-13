@@ -37,7 +37,10 @@ module Aeternitas
 
       validates :pollable_meta_data, presence: true
 
-      before_validation ->(pollable) { pollable.pollable_meta_data ||= pollable.build_pollable_meta_data(state: 'waiting' ); true }
+      before_validation ->(pollable) do
+        pollable.pollable_meta_data ||= pollable.build_pollable_meta_data(state: 'waiting')
+        pollable.pollable_meta_data.pollable_class = pollable.class.name
+      end
 
       after_commit ->(pollable) { Aeternitas::Metrics.log(:pollables_created, pollable.class) }, on: :create
 
@@ -87,7 +90,10 @@ module Aeternitas
     # @note Manual registration is only needed if the object was created before
     #   {Aeternitas::Pollable} was included. Otherwise it is done automatically after creation.
     def register_pollable
-      self.pollable_meta_data ||= create_pollable_meta_data(state: 'waiting')
+      self.pollable_meta_data ||= create_pollable_meta_data(
+          state: 'waiting',
+          pollable_class: self.class.name
+      )
     end
 
     def guard

@@ -34,6 +34,12 @@ describe Aeternitas::Metrics do
         raise_error(ArgumentError, 'execution_time isn\'t a Counter')
       )
     end
+
+    it 'works with STI' do
+      expect(TabsTabs).to receive(:increment_counter).with('polls:FullPollable::ExtendedFullPollable')
+      expect(TabsTabs).to receive(:increment_counter).with('polls:Aeternitas::Pollable')
+      Aeternitas::Metrics.log(:polls, FullPollable::ExtendedFullPollable)
+    end
   end
 
   describe '.log_value' do

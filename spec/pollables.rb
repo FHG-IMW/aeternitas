@@ -53,4 +53,6 @@ class FullPollable < ActiveRecord::Base
   def do_something_after
     @after_polling << :method
   end
+
+  class ExtendedFullPollable < FullPollable ; end
 end

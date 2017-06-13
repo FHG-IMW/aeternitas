@@ -11,6 +11,7 @@ module Aeternitas
     # create_table aeternitas_pollable_meta_data do |t|
     #   t.string :pollable_type, null: false
     #   t.integer :pollable_id, null: false
+    #   t.string :pollable_class, null: false
     #   t.datetime :next_polling, null: false, default: "1970-01-01 00:00:00+002"
     #   t.datetime :last_polling
     #   t.string :state
@@ -19,12 +20,14 @@ module Aeternitas
     # end
     # create_index :aeternitas_pollable_meta_data, [:pollable_id, :pollable_type], name: 'aeternitas_pollable_unique', unique: true
     # create_index :aeternitas_pollable_meta_data, [:next_polling, :state], name: 'aeternitas_pollable_enqueueing'
+    # create_index :aeternitas_pollable_meta_data, [:pollable_class], name: 'aeternitas_pollable_class'
     ######
 
     belongs_to :pollable, polymorphic: true
 
     validates :pollable_type, presence: true, uniqueness: { scope: :pollable_id }
     validates :pollable_id, presence: true, uniqueness: { scope: :pollable_type }
+    validates :pollable_class, presence: true
     validates :next_polling, presence: true
 
     aasm column: :state do

@@ -4,6 +4,14 @@ describe Aeternitas::Pollable do
   let(:simple_pollable) { SimplePollable.create!(name: 'Foo') }
   let(:full_pollable) { FullPollable.create!(name: 'Foo') }
 
+  describe '.create' do
+    it 'creates a new pollable meta data' do
+      pollable = FullPollable::ExtendedFullPollable.create(name: 'Test')
+      expect(pollable.pollable_meta_data.present?).to be true
+      expect(pollable.pollable_meta_data.pollable_class).to eq("FullPollable::ExtendedFullPollable")
+    end
+  end
+
   describe '#execute_poll' do
     before(:each) do
       allow(Aeternitas::Metrics).to receive(:log).and_return(nil)
@@ -183,6 +191,7 @@ describe Aeternitas::Pollable do
         expect(Aeternitas::PollableMetaData.count).to be(1)
         expect(full_pollable.pollable_meta_data.present?).to be(true)
         expect(full_pollable.pollable_meta_data.state).to eq 'waiting'
+        expect(full_pollable.pollable_meta_data.pollable_class).to eq 'FullPollable'
       end
     end
 
