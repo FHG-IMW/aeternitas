@@ -64,12 +64,12 @@ module Aeternitas
     end
 
     def self.pollable_growth
-      pollable_types = Aeternitas::PollableMetaData.distinct(:pollable_type).pluck(:pollable_type)
+      pollable_classes = Aeternitas::PollableMetaData.distinct(:pollable_klass).pluck(:pollable_class)
       range = (7.days.ago.to_date..Date.today)
 
-      colors = ColorGenerator.new(pollable_types.count)
+      colors = ColorGenerator.new(pollable_classes.count)
 
-      datasets = pollable_types.map do |type|
+      datasets = pollable_classes.map do |type|
         values = Aeternitas::Metrics.pollables_created(
             type.constantize,
             from: range.begin.beginning_of_day,
@@ -81,13 +81,13 @@ module Aeternitas
           label: type,
           data: values,
           borderColor: colors.next.hex,
-          backgroundColor: colors.current.hex,
+          backgroundColor: colors.current.hex
         }
       end
 
       {
-          labels: range.to_a.map {|date| date.strftime("%B %d")},
-          datasets: datasets
+        labels: range.to_a.map {|date| date.strftime("%B %d")},
+        datasets: datasets
       }
     end
   end

@@ -1,7 +1,7 @@
 module Aeternitas
   module PollablesIndexStatistics
     def self.available_pollables
-      Aeternitas::PollableMetaData.distinct(:pollable_type).pluck(:pollable_type).map(&:constantize)
+      Aeternitas::PollableMetaData.distinct(:pollable_klass).pluck(:pollable_klass).map(&:constantize)
     end
 
     def self.failure_ratio(pollable)

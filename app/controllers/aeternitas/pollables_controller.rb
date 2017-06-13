@@ -36,7 +36,7 @@ module Aeternitas
     def set_pollable
       pollable_name = params.fetch(:id)
 
-      if Aeternitas::PollableMetaData.where(pollable_type: pollable_name).exists?
+      if Aeternitas::PollableMetaData.where(pollable_klass: pollable_name).exists?
         @pollable = pollable_name.constantize
       else
         render_error(404, "Pollable of type #{pollable_name} not found")
