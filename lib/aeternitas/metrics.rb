@@ -18,6 +18,7 @@ module Aeternitas
   #   - guard_timeout => Time until the guard is unlocked in seconds
   #   - guard_timeout_exceeded => Number of jobs that ran longer than the guards timeout
   #   - pollables_created => Number of created pollables
+  #   - sources_created => Number of created sources
   #
   # Available Resolutions are:
   #   - :minute (stored for 3 days)
@@ -67,69 +68,69 @@ module Aeternitas
 
     # Increses the specified counter metric for the given pollable.
     # @param [Symbol, String] name the metric
-    # @param [Pollable] pollable pollable instance
-    def self.log(name, pollable)
+    # @param [Pollable] pollable_class pollable instance
+    def self.log(name, pollable_class)
       raise('Metric not found') unless AVAILABLE_METRICS.key? name
       raise ArgumentError, "#{name} isn't a Counter" unless AVAILABLE_METRICS[name] == :counter
-      TabsTabs.increment_counter(get_key(name, pollable))
+      TabsTabs.increment_counter(get_key(name, pollable_class))
       TabsTabs.increment_counter(get_key(name, Aeternitas::Pollable))
     end
 
     # Logs a value in a value metric for the given pollable.
     # @param [Symbol String] name the metric
-    # @param [Pollable] pollable pollable instance
+    # @param [Pollable] pollable_class pollable instance
     # @param [Object] value the value
-    def self.log_value(name, pollable, value)
+    def self.log_value(name, pollable_class, value)
       raise('Metric not found') unless AVAILABLE_METRICS.key? name
       raise(ArgumentError, "#{name} isn't a Value") unless AVAILABLE_METRICS[name] == :value
-      TabsTabs.record_value(get_key(name, pollable), value)
+      TabsTabs.record_value(get_key(name, pollable_class), value)
       TabsTabs.record_value(get_key(name, Aeternitas::Pollable), value)
     end
 
     # Retrieves the stats of the given metric in the given time frame and resolution.
     # @param [Symbol String] name the metric
-    # @param [Object] pollable the pollable class
+    # @param [Object] pollable_class the pollable class
     # @param [DateTime] from begin of the time frame
     # @param [DateTime] to end of the timeframe
     # @param [Symbol] resolution resolution
     # @return [Aeternitas::Metrics::Counter, Aeternitas::Metrics::Value] stats
-    def self.get(name, pollable, from: 1.hour.ago, to: Time.now, resolution: :minute)
+    def self.get(name, pollable_class, from: 1.hour.ago, to: Time.now, resolution: :minute)
       raise('Metric not found') unless AVAILABLE_METRICS.key? name
       raise('Invalid interval') if from > to
-      result = TabsTabs.get_stats(get_key(name, pollable), from..to, resolution)
+      result = TabsTabs.get_stats(get_key(name, pollable_class), from..to, resolution)
       if AVAILABLE_METRICS[name] == :counter
         Counter.new(result)
       else
         Values.new(result)
       end
     rescue TabsTabs::UnknownMetricError => _
-      TabsTabs.create_metric(get_key(name, pollable), AVAILABLE_METRICS[name].to_s)
-      get(name, pollable, from: from, to: to, resolution: resolution)
+      TabsTabs.create_metric(get_key(name, pollable_class), AVAILABLE_METRICS[name].to_s)
+      get(name, pollable_class, from: from, to: to, resolution: resolution)
     end
 
     # Returns the failure ratio of the given job for given time frame and resolution
     # @param [Symbol String] name the metric
-    # @param [Object] pollable the pollable class
+    # @param [Object] pollable_class the pollable class
     # @param [DateTime] from begin of the time frame
     # @param [DateTime] to end of the timeframe
     # @param [Symbol] resolution resolution
     # @return [Aeternitas::Metrics::Ratio] ratio time series
-    def self.failure_ratio(pollable, from: 1.hour.ago, to: Time.now, resolution: :minute)
-      polls = polls(pollable, from: from, to: to, resolution: resolution)
-      failed_polls = failed_polls(pollable, from: from, to: to, resolution: resolution)
+    def self.failure_ratio(pollable_class, from: 1.hour.ago, to: Time.now, resolution: :minute)
+      polls = polls(pollable_class, from: from, to: to, resolution: resolution)
+      failed_polls = failed_polls(pollable_class, from: from, to: to, resolution: resolution)
       Ratio.new(from, to, resolution, calculate_ratio(polls, failed_polls))
     end
 
     # Returns the lock ratio of the given job for given time frame and resolution
     # @param [Symbol String] name the metric
-    # @param [Object] pollable the pollable class
+    # @param [Object] pollable_class the pollable class
     # @param [DateTime] from begin of the time frame
     # @param [DateTime] to end of the timeframe
     # @param [Symbol] resolution resolution
     # @return [Aeternitas::Metrics::Ratio] ratio time series
-    def self.guard_locked_ratio(pollable, from: 1.hour.ago, to: Time.now, resolution: :minute)
-      polls = polls(pollable, from: from, to: to, resolution: resolution)
-      guard_locked = guard_locked(pollable, from: from, to: to, resolution: resolution)
+    def self.guard_locked_ratio(pollable_class, from: 1.hour.ago, to: Time.now, resolution: :minute)
+      polls = polls(pollable_class, from: from, to: to, resolution: resolution)
+      guard_locked = guard_locked(pollable_class, from: from, to: to, resolution: resolution)
       Ratio.new(from, to, resolution, calculate_ratio(polls, guard_locked))
     end
 

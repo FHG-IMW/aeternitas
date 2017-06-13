@@ -39,7 +39,7 @@ module Aeternitas
 
       before_validation ->(pollable) { pollable.pollable_meta_data ||= pollable.build_pollable_meta_data(state: 'waiting' ); true }
 
-      after_commit ->(pollable) { Aeternitas::Metrics.log(:pollables_created, pollable) }, on: :create
+      after_commit ->(pollable) { Aeternitas::Metrics.log(:pollables_created, pollable.class) }, on: :create
 
       delegate :next_polling, :last_polling, :disable_polling, to: :pollable_meta_data
     end
@@ -118,7 +118,7 @@ module Aeternitas
       source = self.sources.create(raw_content: raw_content)
       return nil unless source.persisted?
 
-      Aeternitas::Metrics.log(:sources_created, self)
+      Aeternitas::Metrics.log(:sources_created, self.class)
       source
     end
 
@@ -127,7 +127,7 @@ module Aeternitas
     # Run all prepolling methods
     def _before_poll
       @start_time = Time.now
-      Aeternitas::Metrics.log(:polls, self)
+      Aeternitas::Metrics.log(:polls, self.class)
 
       pollable_configuration.before_polling.each { |action| action.call(self) }
       pollable_meta_data.poll!
@@ -146,22 +146,22 @@ module Aeternitas
 
       if @start_time
         execution_time = Time.now - @start_time
-        Aeternitas::Metrics.log_value(:execution_time, self, execution_time)
-        Aeternitas::Metrics.log(:guard_timeout_exceeded, self) if execution_time > pollable_configuration.guard_options[:timeout]
+        Aeternitas::Metrics.log_value(:execution_time, self.class, execution_time)
+        Aeternitas::Metrics.log(:guard_timeout_exceeded, self.class) if execution_time > pollable_configuration.guard_options[:timeout]
         @start_time = nil
       end
-      Aeternitas::Metrics.log(:successful_polls, self)
+      Aeternitas::Metrics.log(:successful_polls, self.class)
     end
 
     def log_poll_error(e)
       if e.is_a? Aeternitas::Guard::GuardIsLocked
-        Aeternitas::Metrics.log(:guard_locked, self)
-        Aeternitas::Metrics.log_value(:guard_timeout, self, e.timeout - Time.now)
+        Aeternitas::Metrics.log(:guard_locked, self.class)
+        Aeternitas::Metrics.log_value(:guard_timeout, self.class, e.timeout - Time.now)
       elsif e.is_a? Aeternitas::Errors::Ignored
-        Aeternitas::Metrics.log(:ignored_error, self)
-        Aeternitas::Metrics.log(:failed_polls, self)
+        Aeternitas::Metrics.log(:ignored_error, self.class)
+        Aeternitas::Metrics.log(:failed_polls, self.class)
       else
-        Aeternitas::Metrics.log(:failed_polls, self)
+        Aeternitas::Metrics.log(:failed_polls, self.class)
       end
     end
 
