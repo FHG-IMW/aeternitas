@@ -37,7 +37,12 @@ module Aeternitas
 
       validates :pollable_meta_data, presence: true
 
-      before_validation ->(pollable) { pollable.pollable_meta_data ||= pollable.build_pollable_meta_data(state: 'waiting' ); true }
+      before_validation ->(pollable) do
+        pollable.pollable_meta_data ||= pollable.build_pollable_meta_data(state: 'waiting')
+        pollable.pollable_meta_data.pollable_class = pollable.class.name
+      end
+
+      after_commit ->(pollable) { Aeternitas::Metrics.log(:pollables_created, pollable.class) }, on: :create
 
       delegate :next_polling, :last_polling, :disable_polling, to: :pollable_meta_data
     end
@@ -62,7 +67,15 @@ module Aeternitas
       end
 
       _after_poll
+    rescue StandardError => e
+      begin
+        log_poll_error(e)
+      ensure
+        raise e
+      end
     end
+
+
 
     # This method implements the class specific polling behaviour.
     # It is only called after the lock was acquired successfully.
@@ -77,7 +90,10 @@ module Aeternitas
     # @note Manual registration is only needed if the object was created before
     #   {Aeternitas::Pollable} was included. Otherwise it is done automatically after creation.
     def register_pollable
-      self.pollable_meta_data ||= create_pollable_meta_data(state: 'waiting')
+      self.pollable_meta_data ||= create_pollable_meta_data(
+          state: 'waiting',
+          pollable_class: self.class.name
+      )
     end
 
     def guard
@@ -106,13 +122,19 @@ module Aeternitas
     # @return [Aeternitas::Source] the newly created or existing source
     def add_source(raw_content)
       source = self.sources.create(raw_content: raw_content)
-      source.persisted? ? source : nil
+      return nil unless source.persisted?
+
+      Aeternitas::Metrics.log(:sources_created, self.class)
+      source
     end
 
     private
 
     # Run all prepolling methods
     def _before_poll
+      @start_time = Time.now
+      Aeternitas::Metrics.log(:polls, self.class)
+
       pollable_configuration.before_polling.each { |action| action.call(self) }
       pollable_meta_data.poll!
     end
@@ -127,6 +149,26 @@ module Aeternitas
       end
 
       pollable_configuration.after_polling.each { |action| action.call(self) }
+
+      if @start_time
+        execution_time = Time.now - @start_time
+        Aeternitas::Metrics.log_value(:execution_time, self.class, execution_time)
+        Aeternitas::Metrics.log(:guard_timeout_exceeded, self.class) if execution_time > pollable_configuration.guard_options[:timeout]
+        @start_time = nil
+      end
+      Aeternitas::Metrics.log(:successful_polls, self.class)
+    end
+
+    def log_poll_error(e)
+      if e.is_a? Aeternitas::Guard::GuardIsLocked
+        Aeternitas::Metrics.log(:guard_locked, self.class)
+        Aeternitas::Metrics.log_value(:guard_timeout, self.class, e.timeout - Time.now)
+      elsif e.is_a? Aeternitas::Errors::Ignored
+        Aeternitas::Metrics.log(:ignored_error, self.class)
+        Aeternitas::Metrics.log(:failed_polls, self.class)
+      else
+        Aeternitas::Metrics.log(:failed_polls, self.class)
+      end
     end
 
     class_methods do

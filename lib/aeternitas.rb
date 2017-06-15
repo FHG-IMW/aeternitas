@@ -2,6 +2,7 @@ require "active_support/all"
 require "redis"
 require "connection_pool"
 require "sidekiq-unique-jobs"
+require "tabs_tabs"
 require "aeternitas/version"
 require "aeternitas/guard"
 require "aeternitas/pollable"
@@ -11,6 +12,7 @@ require "aeternitas/polling_frequency"
 require "aeternitas/errors"
 require "aeternitas/storage_adapter"
 require "aeternitas/sidekiq"
+require "aeternitas/metrics"
 
 # Aeternitas
 module Aeternitas
@@ -67,6 +69,11 @@ module Aeternitas
     # @return [Aeternitas::StoragesAdapter] new storage adapter instance
     def get_storage_adapter
       @storage_adapter.new(storage_adapter_config)
+    end
+
+    def redis=(redis_config)
+      @redis = redis_config
+      TabsTabs.configure { |tabstabs_config| tabstabs_config.redis = redis_config }
     end
   end
 end

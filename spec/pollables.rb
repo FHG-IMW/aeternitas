@@ -36,7 +36,7 @@ class FullPollable < ActiveRecord::Base
     guard_options(
       key: ->(pollable) { "#{pollable.created_at}-#{pollable.id}" },
       cooldown: 1.second,
-      timeout:  2.years
+      timeout:  5.minutes
     )
     
     sleep_on_guard_locked false
@@ -53,4 +53,6 @@ class FullPollable < ActiveRecord::Base
   def do_something_after
     @after_polling << :method
   end
+
+  class ExtendedFullPollable < FullPollable ; end
 end

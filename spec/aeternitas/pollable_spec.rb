@@ -4,7 +4,25 @@ describe Aeternitas::Pollable do
   let(:simple_pollable) { SimplePollable.create!(name: 'Foo') }
   let(:full_pollable) { FullPollable.create!(name: 'Foo') }
 
+  describe '.create' do
+    it 'creates a new pollable meta data' do
+      pollable = FullPollable::ExtendedFullPollable.create(name: 'Test')
+      expect(pollable.pollable_meta_data.present?).to be true
+      expect(pollable.pollable_meta_data.pollable_class).to eq("FullPollable::ExtendedFullPollable")
+    end
+  end
+
   describe '#execute_poll' do
+    before(:each) do
+      allow(Aeternitas::Metrics).to receive(:log).and_return(nil)
+      allow(Aeternitas::Metrics).to receive(:log_value).and_return(nil)
+    end
+
+    it 'logs the poll' do
+      expect(Aeternitas::Metrics).to receive(:log).with(:polls, FullPollable)
+      full_pollable.execute_poll
+    end
+
     context 'when the lock can be acquired' do
       it 'tries to grab the lock' do
         expect(full_pollable).to receive(:guard).and_call_original
@@ -36,6 +54,41 @@ describe Aeternitas::Pollable do
         full_pollable.execute_poll
         expect(full_pollable.after_polling).to eq(%i[block method])
       end
+
+      it 'logs the execution time' do
+        allow(full_pollable).to(
+          receive(:poll) { full_pollable.instance_variable_set(:@start_time, 20.seconds.ago) }
+        )
+
+        expect(Aeternitas::Metrics).to receive(:log_value).with(
+          :execution_time,
+          FullPollable,
+          be_within(1.second).of(20.seconds)
+        )
+
+        full_pollable.execute_poll
+      end
+
+      it 'does not log guard timeout transgression if it does not exceed' do
+        allow(full_pollable).to(
+          receive(:poll) { full_pollable.instance_variable_set(:@start_time, 20.seconds.ago) }
+        )
+        expect(Aeternitas::Metrics).not_to receive(:log).with(:guard_timeout_exceeded, FullPollable)
+        full_pollable.execute_poll
+      end
+
+      it 'logs guard timeout transgression if it exceeds' do
+        allow(full_pollable).to(
+          receive(:poll) { full_pollable.instance_variable_set(:@start_time, 20.minutes.ago) }
+        )
+        expect(Aeternitas::Metrics).to receive(:log).with(:guard_timeout_exceeded, FullPollable)
+        full_pollable.execute_poll
+      end
+
+      it 'logs a successful execution' do
+        expect(Aeternitas::Metrics).to receive(:log).with(:successful_polls, FullPollable)
+        full_pollable.execute_poll
+      end
     end
 
     context 'when the lock can not be acquired' do
@@ -47,8 +100,22 @@ describe Aeternitas::Pollable do
       end
 
       it 'does not run the poll_method' do
-        begin full_pollable.execute_poll; rescue ; end
+        full_pollable.execute_poll rescue nil
         expect(full_pollable.polled).to be nil
+      end
+
+      it 'logs the guard_locked occurrence' do
+        expect(Aeternitas::Metrics).to receive(:log).with(:guard_locked, FullPollable)
+        full_pollable.execute_poll rescue nil
+      end
+
+      it 'logs the timeout' do
+        expect(Aeternitas::Metrics).to receive(:log_value).with(
+          :guard_timeout,
+          FullPollable,
+          be_within(1.second).of(1.hour)
+        )
+        full_pollable.execute_poll rescue nil
       end
     end
 
@@ -69,13 +136,23 @@ describe Aeternitas::Pollable do
 
       it 'does not run after_poll methods' do
         expect(full_pollable).not_to receive(:_after_poll)
-        begin full_pollable.execute_poll; rescue ; end
+        full_pollable.execute_poll rescue nil
         expect(full_pollable.after_polling).to be(nil)
       end
 
       it 'sets the state to `errored`' do
-        begin full_pollable.execute_poll; rescue ; end
+        full_pollable.execute_poll rescue nil
         expect(full_pollable.pollable_meta_data.errored?).to be(true)
+      end
+
+      it 'logs an ignored error' do
+        expect(Aeternitas::Metrics).to receive(:log).with(:ignored_error, FullPollable)
+        full_pollable.execute_poll rescue nil
+      end
+
+      it 'logs a failed poll' do
+        expect(Aeternitas::Metrics).to receive(:log).with(:failed_polls, FullPollable)
+        full_pollable.execute_poll rescue nil
       end
     end
 
@@ -114,6 +191,7 @@ describe Aeternitas::Pollable do
         expect(Aeternitas::PollableMetaData.count).to be(1)
         expect(full_pollable.pollable_meta_data.present?).to be(true)
         expect(full_pollable.pollable_meta_data.state).to eq 'waiting'
+        expect(full_pollable.pollable_meta_data.pollable_class).to eq 'FullPollable'
       end
     end
 
@@ -143,7 +221,7 @@ describe Aeternitas::Pollable do
     it 'returns a guard instance with the given configured options' do
       key = full_pollable.pollable_configuration.guard_options[:key].call(full_pollable)
       guard = Aeternitas::Guard.new("foo", 1.second, 10.minutes)
-      expect(Aeternitas::Guard).to receive(:new).with(key, 1.second, 2.years).and_return(guard)
+      expect(Aeternitas::Guard).to receive(:new).with(key, 1.second, 5.minutes).and_return(guard)
       full_pollable.guard
     end
   end
@@ -157,6 +235,12 @@ describe Aeternitas::Pollable do
         expect(source.persisted?).to be(true)
         expect(full_pollable.sources).to contain_exactly(source)
       end
+
+      it 'logs a created source', tmpFiles: true do
+        expect(Aeternitas::Metrics).to receive(:log).with(:pollables_created, FullPollable)
+        expect(Aeternitas::Metrics).to receive(:log).with(:sources_created, FullPollable)
+        full_pollable.add_source('foobar')
+      end
     end
 
     context 'when the source exists' do
@@ -165,6 +249,12 @@ describe Aeternitas::Pollable do
         old_source = Aeternitas::Source.create(pollable: full_pollable, raw_content: 'foobar')
         expect(full_pollable.add_source('foobar')).to be(nil)
         expect(full_pollable.sources.count).to be(1)
+      end
+
+      it 'doesnt log a created source', tmpFiles: true do
+        full_pollable.add_source('foobar')
+        expect(Aeternitas::Metrics).not_to receive(:log).with(:sources_created, FullPollable)
+        full_pollable.add_source('foobar')
       end
     end
   end
@@ -177,6 +267,13 @@ describe Aeternitas::Pollable do
         expect(b).to be(block)
       end
       FullPollable.polling_options(&block)
+    end
+  end
+
+  describe '.create' do
+    it 'logs a created pollable' do
+      expect(Aeternitas::Metrics).to receive(:log).with(:pollables_created, FullPollable)
+      FullPollable.create(name: 'foo')
     end
   end
 end
