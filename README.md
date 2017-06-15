@@ -1,5 +1,7 @@
 # Æternitas 
 
+[![Build Status](https://travis-ci.org/FHG-IMW/aeternitas.svg?branch=master)](https://travis-ci.org/FHG-IMW/aeternitas)
+
 A ruby gem for continuous source retrieval and data integration.
 
 Aeternitas provides means to regularly "poll" resources (i.e. a website, twitter feed or API) and to permanently store retrieved results.
