@@ -1,4 +1,4 @@
-# Æternitas 
+![Aeternitas](https://github.com/FHG-IMW/aeternitas/blob/master/logo.png?raw=true)
 
 [![Build Status](https://travis-ci.org/FHG-IMW/aeternitas.svg?branch=master)](https://travis-ci.org/FHG-IMW/aeternitas)
 
