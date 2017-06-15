@@ -8,7 +8,7 @@
 /spec/reports/
 /tmp/
 
-.idea/**/*
+.idea/
 
 ## File-based project format:
 *.iws
