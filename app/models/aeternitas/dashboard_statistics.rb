@@ -43,7 +43,7 @@ module Aeternitas
         labels[i] = day.strftime("%b %d")
         Aeternitas::PollableMetaData
             .where(next_polling: (day.beginning_of_day..day.end_of_day))
-            .group(:pollable_type)
+            .group(:pollable_class)
             .count
             .each_pair {|pollable, count| datapoints[pollable][i] = count }
       end
