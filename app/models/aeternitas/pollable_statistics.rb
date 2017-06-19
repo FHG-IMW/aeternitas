@@ -2,14 +2,14 @@ module Aeternitas
   module PollableStatistics
     def self.enqueued(pollable)
       Aeternitas::PollableMetaData
-        .where(pollable_klass: pollable.name)
+        .where(pollable_class: pollable.name)
         .enqueued
         .count
     end
 
     def self.deactivated(pollable)
       Aeternitas::PollableMetaData
-        .where(pollable_klass: pollable.name)
+        .where(pollable_class: pollable.name)
         .deactivated
         .count
     end

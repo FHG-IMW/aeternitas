@@ -64,7 +64,7 @@ module Aeternitas
     end
 
     def self.pollable_growth
-      pollable_classes = Aeternitas::PollableMetaData.distinct(:pollable_klass).pluck(:pollable_class)
+      pollable_classes = Aeternitas::PollableMetaData.distinct(:pollable_class).pluck(:pollable_class)
       range = (7.days.ago.to_date..Date.today)
 
       colors = ColorGenerator.new(pollable_classes.count)
