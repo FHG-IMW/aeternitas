@@ -72,8 +72,10 @@ module Aeternitas
     def self.log(name, pollable_class)
       raise('Metric not found') unless AVAILABLE_METRICS.key? name
       raise ArgumentError, "#{name} isn't a Counter" unless AVAILABLE_METRICS[name] == :counter
-      TabsTabs.increment_counter(get_key(name, pollable_class))
-      TabsTabs.increment_counter(get_key(name, Aeternitas::Pollable))
+      begin
+        TabsTabs.increment_counter(get_key(name, pollable_class))
+        TabsTabs.increment_counter(get_key(name, Aeternitas::Pollable))
+      rescue StandardError ; end
     end
 
     # Logs a value in a value metric for the given pollable.
@@ -83,8 +85,10 @@ module Aeternitas
     def self.log_value(name, pollable_class, value)
       raise('Metric not found') unless AVAILABLE_METRICS.key? name
       raise(ArgumentError, "#{name} isn't a Value") unless AVAILABLE_METRICS[name] == :value
-      TabsTabs.record_value(get_key(name, pollable_class), value)
-      TabsTabs.record_value(get_key(name, Aeternitas::Pollable), value)
+      begin
+        TabsTabs.record_value(get_key(name, pollable_class), value)
+        TabsTabs.record_value(get_key(name, Aeternitas::Pollable), value)
+      rescue StandardError ; end
     end
 
     # Retrieves the stats of the given metric in the given time frame and resolution.
