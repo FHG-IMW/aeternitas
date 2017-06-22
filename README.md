@@ -234,15 +234,17 @@ _Default: 'polling'_
 
 This option specifies the Sidekiq queue into which the poll job will be enqueued.
 
-#### lock_key
+#### guard_key
 _Default: "#{obj.class.name}"_
 
-This option specifies the lock key. This can be done by either specifying a method name or a custom block. Default is to lock on pollable class level. Therefor only one job at a time per pollable class will be executed to avoid DDOSing by accident.
+This option specifies the guard key. This can be done by either specifying a method name or a custom block. 
+Default is to lock on pollable class level. Therefor only one job at a time per pollable class will be executed to
+avoid DDOSing by accident.
 
 ```ruby
 polling_options do
   # use the urls host as lock key
-  lock_key ->(website) { URI.parse(website.url).host }
+  guard ->(website) { URI.parse(website.url).host }
 end
 ```
 
