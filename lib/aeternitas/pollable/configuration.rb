@@ -36,7 +36,7 @@ module Aeternitas
         @before_polling = []
         @after_polling = []
         @guard_options = {
-          key: ->(obj) { return "#{obj.class.name}-#{obj.id}"},
+          key: ->(obj) { return obj.class.name.to_s },
           timeout: 10.minutes,
           cooldown: 5.seconds
         }
