@@ -198,7 +198,7 @@ Specify methods run after polling was successful. See __before_polling__
 #### deactivation_errors
 _Default: []_
 
-Specify error clases which, once they occur will instantly deactivate the pollable. This can be useful for example if 
+Specify error clases which, once they occur, will instantly deactivate the pollable. This can be useful for example if 
 the error implied that the resource does not exist any more.
 
 ```ruby
@@ -225,9 +225,9 @@ end
 #### sleep_on_guard_lock
 _Default: false_
 
-With this option set to true, f a pollable can't acquire the lock, it will sleep until the guard_timeout expires, 
-effectively bocking the Sidekiq queue from processing any other jobs. 
-This should *only* be used, if you know that all the jobs within this queue will try to access the same resource.  
+With this option set to true, if a pollable can't acquire the lock, it will sleep until the guard_timeout expires, 
+effectively blocking the Sidekiq queue from processing any other jobs. 
+This should *only* be used, if you know that all the jobs within this queue will try to access the same resource and you want to pause the entire queue.  
  
 #### queue
 _Default: 'polling'_
@@ -235,9 +235,9 @@ _Default: 'polling'_
 This option specifies the Sidekiq queue into which the poll job will be enqueued.
 
 #### lock_key
-_Default: "#{obj.class.name}-#{obj.id}"_
+_Default: "#{obj.class.name}"_
 
-This option specifies the lock key. This can be done by either specifying a method name or a custom block
+This option specifies the lock key. This can be done by either specifying a method name or a custom block. Default is to lock on pollable class level. Therefor only one job at a time per pollable class will be executed to avoid DDOSing by accident.
 
 ```ruby
 polling_options do
