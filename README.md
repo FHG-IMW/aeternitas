@@ -248,7 +248,29 @@ polling_options do
 end
 ```
 
+## Web UI
 
+Æternitas also has a monitoring interface which can be integrated with a rail application.
+
+To use it add this line to your application's Gemfile:
+
+```ruby
+gem 'aeternitas_web_ui'
+```
+
+Then run 
+
+    $ bundle install
+    
+And mount the engine
+   
+```ruby
+# config/routes.rb
+   
+mount Aeternitas::WebUi::Engine => '/aeternitas'
+```
+
+For more information head over to the project page: [https://github.com/FHG-IMW/aeternitas_web_ui](https://github.com/FHG-IMW/aeternitas_web_ui)
 
 ## Development
 
