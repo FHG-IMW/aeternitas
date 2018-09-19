@@ -223,7 +223,7 @@ end
 ```
 
 #### sleep_on_guard_lock
-_Default: false_
+_Default: true
 
 With this option set to true, if a pollable can't acquire the lock, it will sleep until the guard_timeout expires, 
 effectively blocking the Sidekiq queue from processing any other jobs. 
