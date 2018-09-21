@@ -208,7 +208,7 @@ polling_options do
 end
 ```
 
-#### ignored_errors
+#### ignore_error
 _Default: []_
 
 Errors specified as ignored errors are wrapped within `Aeternitas::Errors::Ignored`. which is then raised instead.
@@ -218,7 +218,7 @@ ignore, you can do this on a per pollable basis
 ```ruby
 polling_options do
   # don't log an error if the twitter api is down
-  ignored_errors Twitter::Error::ServiceUnavailable
+  ignore_error Twitter::Error::ServiceUnavailable
 end
 ```
 
