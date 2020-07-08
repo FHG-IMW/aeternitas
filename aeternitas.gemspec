@@ -26,11 +26,11 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
 
-  spec.add_dependency 'activerecord', '~> 5'
+  spec.add_dependency 'activerecord', '>= 5'
   spec.add_dependency 'redis'
   spec.add_dependency 'connection_pool'
   spec.add_dependency 'aasm'
-  spec.add_dependency 'sidekiq', '> 4'
+  spec.add_dependency 'sidekiq', '> 4', '< 6'
   spec.add_dependency 'sidekiq-unique-jobs', '~> 5.0'
   spec.add_dependency 'tabstabs'
 
