@@ -37,7 +37,7 @@ describe Aeternitas::Sidekiq::Middleware do
   end
 
   it 'updates the pollables state' do
-    meta_data.update_attributes(state: 'errored')
+    meta_data.update!(state: 'errored')
     TestJob.perform_async(meta_data.id)
     meta_data.reload
     expect(meta_data.enqueued?).to be(true)

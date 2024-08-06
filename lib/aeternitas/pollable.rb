@@ -142,7 +142,7 @@ module Aeternitas
     # Run all postpolling methods
     def _after_poll
       pollable_meta_data.wait! do
-        pollable_meta_data.update_attributes!(
+        pollable_meta_data.update!(
           last_polling: Time.now,
           next_polling: pollable_configuration.polling_frequency.call(self)
         )

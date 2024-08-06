@@ -16,7 +16,7 @@ describe Aeternitas::Sidekiq::PollJob do
 
       Aeternitas::Sidekiq::PollJob.within_sidekiq_retries_exhausted_block(msg) {
         expect(Aeternitas::PollableMetaData).to(
-          receive(:find_by).with(id: meta_data.id).and_return(meta_data)
+          receive(:find_by).with({id: meta_data.id}).and_return(meta_data)
         )
 
         expect(meta_data).to(

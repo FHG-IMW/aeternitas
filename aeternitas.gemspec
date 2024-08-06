@@ -26,7 +26,7 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
 
-  spec.add_dependency 'activerecord', '>= 5'
+  spec.add_dependency 'activerecord', '>= 6.1'
   spec.add_dependency 'redis'
   spec.add_dependency 'connection_pool'
   spec.add_dependency 'aasm'
@@ -37,8 +37,8 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'bundler'
   spec.add_development_dependency 'rake'
   spec.add_development_dependency 'rspec', '~> 3.0'
-  spec.add_development_dependency 'sqlite3'
+  spec.add_development_dependency 'sqlite3', '~> 1.4'
   spec.add_development_dependency 'database_cleaner', '~> 1.5'
-  spec.add_development_dependency 'rspec-sidekiq'
+  spec.add_development_dependency 'rspec-sidekiq', '~> 3.1'
   spec.add_development_dependency 'mock_redis'
 end
